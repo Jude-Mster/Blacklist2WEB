@@ -1,0 +1,110 @@
+<%- include('../partials/top') %>
+<%
+  const icon = {
+    sword: '<path d="M14.5 3H21v6.5L9 21.5 2.5 15z"/><path d="M6 12l6 6M4 20l2-2"/>',
+    shield: '<path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/>',
+    map: '<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.5 3.6 5.2"/>',
+    chest: '<rect x="3" y="9" width="18" height="11" rx="1.5"/><path d="M3 9a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5M3 13h18M11 12h2v3h-2z"/>',
+    pc: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+    android: '<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M8 8a4 4 0 0 1 8 0M8 4l1.5 2M16 4l-1.5 2M9 12h.01M15 12h.01M8 19v2M16 19v2"/>',
+  };
+  const svg = (k, s = 30) => `<svg aria-hidden="true" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${icon[k]}</svg>`;
+%>
+<section class="hero">
+  <div class="inner">
+    <span class="kicker">CLASSIC TWELVESKY 2 · PC &amp; ANDROID</span>
+    <img src="/img/logo.png" alt="Blacklist TS2 Online">
+    <p>Four factions. One shared world. Pick your side and carve your name into the list.</p>
+    <div class="row" style="justify-content: center">
+      <a class="btn big" href="/register">Create account</a>
+      <a class="btn big ghost" href="/download">Download</a>
+    </div>
+    <div class="row" style="justify-content: center; gap: 10px">
+      <span class="chip"><%= status.online ? 'Server online' : 'Server offline' %></span>
+      <% if (status.players != null) { %><span class="chip"><%= status.players %> players online</span><% } %>
+      <span class="chip">PC · Android · one server</span>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 0 4%"><div class="container rates">
+  <% [['EXP', '[x]'], ['Drop', '[x]'], ['Silver', '[x]'], ['Max level', '[Lv]'], ['Factions', '4'], ['Platforms', 'PC · Android']].forEach(([k, v]) => { %>
+    <div class="rate"><div class="k"><%= k %></div><div class="v"><%= v %></div></div>
+  <% }) %>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="heading"><span class="kicker">The old ways</span><h2>Why Blacklist TS2</h2></div>
+  <div class="grid">
+    <% [['I', 'One world, two screens', 'PC and Android share one server, one economy and one ranking. Start on your phone, finish the raid at your desk.'],
+        ['II', 'Faction war is back', 'Four factions, guard posts around every capital, duels and an open PK system with red and black names.'],
+        ['III', 'Classic feel, fewer chores', 'The original look and pace, plus teleport to any map, tap-to-walk on the big map and auto-hunt.']].forEach(([n, t, d]) => { %>
+      <div class="card stack"><span class="num"><%= n %></span><h3><%= t %></h3><p class="muted"><%= d %></p></div>
+    <% }) %>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="heading"><span class="kicker">Server features</span><h2>Everything you need, nothing that breaks the classic</h2></div>
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr))">
+    <% [['sword', 'PK system', 'Switch Normal / PK under your HP bar. Kills add points: red name at 30, black at 100, with a chance to drop worn gear.'],
+        ['shield', 'Duels', 'Challenge anyone in your faction and zone. 180 seconds, optional potion ban, no PK points.'],
+        ['map', 'Teleport anywhere', 'Every map in the teleport list, plus tap the big map to walk there automatically.'],
+        ['bolt', 'Auto-hunt & auto-buff', 'Hunt while you rest. Auto-buff scrolls (1, 7 or 30 days) are sold in the in-game Item Mall.'],
+        ['users', 'Friends & factions', 'Friend lists with live zone, guilds, parties and guards that defend your capital.'],
+        ['chest', 'Savings box & gold bars', 'Store items and silver per account and trade gold bars, safely saved on the server.']].forEach(([i, t, d]) => { %>
+      <div class="card feature"><span class="badge"><%- svg(i) %></span><div class="stack" style="gap: 6px"><h3 style="font-size: 19px"><%= t %></h3><p class="muted small"><%= d %></p></div></div>
+    <% }) %>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="heading"><span class="kicker">Chronicle</span><h2>News &amp; events</h2></div>
+  <% if (news.length) { %>
+    <div class="grid">
+      <% news.forEach(n => { %>
+        <article class="card stack" style="gap: 10px">
+          <div class="row between"><span class="tag"><%= n.tag %></span><span class="dim small"><%= new Date(n.created_at).toISOString().slice(0, 10) %></span></div>
+          <h3><%= n.title %></h3><p class="muted small"><%= n.summary %></p>
+          <a href="/news/<%= n.id %>" class="label small" style="color: var(--redhi)">READ MORE</a>
+        </article>
+      <% }) %>
+    </div>
+    <div class="row" style="justify-content: center"><a class="btn ghost" href="/news">All news</a></div>
+  <% } else { %>
+    <p class="muted" style="text-align: center">No news yet. Check back soon.</p>
+  <% } %>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="row" style="gap: 40px; align-items: stretch">
+    <div class="stack" style="flex: 1 1 420px; gap: 22px">
+      <div class="heading left"><span class="kicker">Hall of legends</span><h2>Top warriors</h2></div>
+      <p class="muted">Live from the game. Level, PK points and faction standings update every few minutes.</p>
+      <div><a class="btn ghost" href="/rankings">Full rankings</a></div>
+    </div>
+    <div class="card" style="flex: 1 1 520px">
+      <% if (top.length) { top.forEach(r => { %>
+        <div class="list-row"><span class="row" style="gap: 14px"><span class="display" style="color: var(--red2); width: 22px"><%= r.rank %></span><%= r.name %></span><span class="muted"><%= r.faction %> · Lv <%= r.value %></span></div>
+      <% }) } else { %><p class="muted">Rankings appear here once the server is online.</p><% } %>
+    </div>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="heading"><span class="kicker">Cross-platform</span><h2>Play on PC or Android</h2></div>
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr))">
+    <div class="card stack" style="align-items: flex-start"><span style="color: var(--red2)"><%- svg('pc', 34) %></span><h3 style="font-size: 24px">PC</h3><p class="muted">Windows 10 / 11 · launcher with auto-update</p><a class="btn" href="/download#pc">Download for PC</a></div>
+    <div class="card stack" style="align-items: flex-start"><span style="color: var(--red2)"><%- svg('android', 34) %></span><h3 style="font-size: 24px">Android</h3><p class="muted">Phones and tablets · installed as an APK</p><a class="btn" href="/download#android">Download for Android</a></div>
+  </div>
+  <p class="muted" style="text-align: center">Both share one server, one economy and one ranking. iOS is not available.</p>
+</div></section>
+
+<section class="band" style="padding: 90px 4%; border-top: 1px solid var(--line)"><div class="container stack" style="align-items: center; text-align: center; max-width: 900px">
+  <h2 class="display" style="font-size: clamp(34px, 5vw, 50px)">Your name belongs on the list</h2>
+  <p>Make a free account, download the game and join your faction tonight.</p>
+  <div class="row" style="justify-content: center"><a class="btn big" href="/register">Create account</a><a class="btn big ghost" href="<%= site.links.discord %>" rel="noopener">Join Discord</a></div>
+</div></section>
+<%- include('../partials/bottom') %>

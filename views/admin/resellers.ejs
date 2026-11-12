@@ -1,0 +1,28 @@
+<%- include('../partials/top') %>
+<section class="section" style="padding-top: 40px"><div class="container">
+  <h1 class="display" style="font-size: 40px">Resellers</h1>
+  <form class="card stack" method="post" action="/admin/resellers">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>Add reseller</h3>
+    <div class="row" style="align-items: flex-end">
+      <label class="f" style="flex: 2 1 180px">Name <input type="text" name="name" required maxlength="80"></label>
+      <label class="f" style="flex: 1 1 100px">Code prefix <input type="text" name="prefix" required maxlength="4" placeholder="PH1"><span class="hint">2–4 letters/numbers</span></label>
+      <label class="f" style="flex: 1 1 140px">Country <input type="text" name="country" maxlength="60"></label>
+      <label class="f" style="flex: 2 1 220px">Contact (link or handle) <input type="text" name="contact" maxlength="200" placeholder="https://facebook.com/…"></label>
+      <label class="f" style="flex: 2 1 200px">Payment methods <input type="text" name="methods" maxlength="200" placeholder="GCash, Maya, bank"></label>
+      <label class="check"><input type="checkbox" name="visible" value="1" checked> Show on Recharge page</label>
+      <button class="btn" type="submit">Add</button>
+    </div>
+  </form>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Prefix</th><th>Country</th><th>Contact</th><th>Methods</th><th>Public</th></tr></thead>
+    <tbody>
+      <% if (!rows.length) { %><tr><td colspan="6" class="muted">No resellers yet.</td></tr><% } %>
+      <% rows.forEach(r => { %>
+        <tr><td><%= r.name %></td><td class="label"><%= r.prefix %></td><td><%= r.country %></td><td class="small"><%= r.contact %></td><td class="small"><%= r.methods %></td>
+          <td><form class="inline" method="post" action="/admin/resellers/<%= r.id %>/toggle"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn sm <%= r.visible ? '' : 'ghost' %>" type="submit"><%= r.visible ? 'Shown' : 'Hidden' %></button></form></td></tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+</div></section>
+<%- include('../partials/bottom') %>

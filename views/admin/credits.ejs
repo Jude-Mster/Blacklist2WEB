@@ -1,0 +1,24 @@
+<%- include('../partials/top') %>
+<section class="section" style="padding-top: 40px"><div class="container">
+  <h1 class="display" style="font-size: 40px">Coin deliveries</h1>
+  <p class="muted">Every coin grant is listed once. "Failed" means the game server did not confirm it yet (for example it was offline). Retrying is safe: the game applies each grant only once.</p>
+  <form class="card row" method="post" action="/admin/credits/grant" style="align-items: flex-end">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label class="f" style="flex: 1 1 160px">Account ID <input type="text" name="accountId" required></label>
+    <label class="f" style="flex: 1 1 120px">Coins <input type="number" name="coins" min="1" max="1000000" required></label>
+    <label class="f" style="flex: 2 1 240px">Reason <input type="text" name="reason" maxlength="200" placeholder="Compensation, event prize…"></label>
+    <button class="btn" type="submit">Give coins</button>
+  </form>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Account</th><th>Source</th><th>Coins</th><th>Status</th><th>Tries</th><th>Error</th><th></th></tr></thead>
+    <tbody>
+      <% if (!rows.length) { %><tr><td colspan="8" class="muted">Nothing yet.</td></tr><% } %>
+      <% rows.forEach(c => { %>
+        <tr><td><%= c.id %></td><td><%= c.account_id %></td><td class="small"><%= c.source %> <span class="dim"><%= c.source_id %></span></td><td><%= c.coins %></td>
+          <td><span class="pill <%= c.status %>"><%= c.status %></span></td><td><%= c.attempts %></td><td class="small muted"><%= c.last_error || '' %></td>
+          <td><% if (c.status !== 'done') { %><form class="inline" method="post" action="/admin/credits/<%= c.id %>/retry"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn sm" type="submit">Retry</button></form><% } %></td></tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+</div></section>
+<%- include('../partials/bottom') %>

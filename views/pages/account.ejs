@@ -1,0 +1,51 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'MY ACCOUNT', heading: 'Welcome, ' + user.account_id, sub: 'Your characters, coins, recharges and security settings.' }) %>
+<% const d = (x) => new Date(x).toISOString().slice(0, 16).replace('T', ' '); const fmt = (n) => Number(n).toLocaleString('en-US'); %>
+<section class="section" style="padding-top: 48px"><div class="container">
+  <div class="row" style="gap: 14px">
+    <div class="stat"><div class="k">PREMIUM COINS</div><div class="v"><%= balance == null ? '—' : fmt(balance) %></div></div>
+    <div class="stat"><div class="k">CHARACTERS</div><div class="v"><%= characters == null ? '—' : characters.length %></div></div>
+    <div class="stat"><div class="k">MEMBER SINCE</div><div class="v" style="font-size: 22px"><%= new Date(user.created_at).toISOString().slice(0, 10) %></div></div>
+    <a class="btn big" href="/recharge">Recharge</a>
+  </div>
+  <% if (characters == null) { %><div class="alert error">The game server is offline, so characters and coins cannot be shown right now.</div><% } %>
+
+  <div class="card">
+    <h3 style="margin-bottom: 6px">Characters</h3>
+    <% if (characters && characters.length) { characters.forEach(c => { %>
+      <div class="list-row">
+        <span class="label"><%= c.name %></span>
+        <span class="row" style="gap: 12px"><span class="muted"><%= c.faction %> · Lv <%= c.level %> · PK <%= c.pk %></span>
+          <form class="inline" method="post" action="/account/unstuck"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="character" value="<%= c.name %>"><button class="btn sm ghost" type="submit">Unstuck</button></form></span>
+      </div>
+    <% }) } else if (characters) { %><p class="muted">No characters yet. Download the game and create one.</p><% } %>
+  </div>
+
+  <div class="grid" style="align-items: start">
+    <div class="card">
+      <h3 style="margin-bottom: 12px">GCash orders</h3>
+      <% if (!orders.length) { %><p class="muted">No orders yet.</p><% } %>
+      <% orders.forEach(o => { %>
+        <div class="list-row"><a href="/recharge/order/<%= o.order_no %>"><%= o.order_no %></a><span class="muted">₱<%= Number(o.amount_php).toFixed(2) %> · <%= fmt(o.coins) %> coins</span><span class="pill <%= o.status %>"><%= o.status.replace('_', ' ') %></span></div>
+      <% }) %>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom: 12px">Coins received</h3>
+      <% if (!credits.length) { %><p class="muted">Nothing yet.</p><% } %>
+      <% credits.forEach(c => { %>
+        <div class="list-row"><span><%= d(c.created_at) %></span><span class="muted"><%= c.source === 'code' ? 'Code' : c.source === 'order' ? 'GCash' : 'Gift' %> · <%= fmt(c.coins) %></span><span class="pill <%= c.status %>"><%= c.status === 'done' ? 'delivered' : c.status === 'failed' ? 'pending' : c.status %></span></div>
+      <% }) %>
+    </div>
+  </div>
+
+  <form class="card stack" id="security" method="post" action="/account/password" style="max-width: 560px">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>Change password</h3>
+    <p class="muted small">Changes the password for both the website and the game.</p>
+    <label class="f">Current password <input type="password" name="current" required autocomplete="current-password"></label>
+    <label class="f">New password <input type="password" name="password" required minlength="8" maxlength="32" autocomplete="new-password"></label>
+    <label class="f">Repeat new password <input type="password" name="password2" required minlength="8" maxlength="32" autocomplete="new-password"></label>
+    <div><button class="btn" type="submit">Save password</button></div>
+  </form>
+</div></section>
+<%- include('../partials/bottom') %>

@@ -1,0 +1,18 @@
+</main>
+<footer class="site-footer">
+  <div class="cols">
+    <div class="col" style="max-width: 320px">
+      <img src="/img/logo.png" alt="<%= site.name %>" style="width: 180px">
+      <p class="muted small">A fan-run TwelveSky 2 private server for PC and Android. Not affiliated with the official game or its publishers.</p>
+    </div>
+    <div class="row" style="gap: 40px; align-items: flex-start">
+      <div class="col"><h4>Game</h4><a href="/download">Download</a><a href="/rankings">Rankings</a><a href="/recharge">Recharge</a><a href="/news">News</a></div>
+      <div class="col"><h4>Account</h4><a href="/register">Register</a><a href="/account">My account</a><a href="/recharge#redeem">Redeem a code</a></div>
+      <div class="col"><h4>Help</h4><a href="/support">Guide &amp; FAQ</a><a href="/support#rules">Server rules</a><a href="/support#terms">Terms &amp; refunds</a></div>
+      <div class="col"><h4>Community</h4><a href="<%= site.links.discord %>" rel="noopener">Discord</a><a href="<%= site.links.facebook %>" rel="noopener">Facebook</a><a href="<%= site.links.telegram %>" rel="noopener">Telegram</a></div>
+    </div>
+  </div>
+  <p class="legal">© <%= new Date().getFullYear() %> <%= site.name %> · All purchases are final<% if (site.links.email) { %> · <a href="mailto:<%= site.links.email %>"><%= site.links.email %></a><% } %></p>
+</footer>
+</body>
+</html>

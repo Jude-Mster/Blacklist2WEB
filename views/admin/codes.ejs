@@ -1,0 +1,46 @@
+<%- include('../partials/top') %>
+<section class="section" style="padding-top: 40px"><div class="container">
+  <h1 class="display" style="font-size: 40px">Codes</h1>
+
+  <% if (created) { %>
+    <div class="card stack" style="border-top-color: #2f7a4b">
+      <h3>Batch #<%= created.batchId %> created: <%= created.codes.length %> × <%= created.coinsEach %> coins (<%= created.label %>)</h3>
+      <p class="alert error">Copy these now. Only a scrambled copy is stored, so they can never be shown again.</p>
+      <div class="code-list"><%= created.codes.join('\n') %></div>
+    </div>
+  <% } %>
+
+  <form class="card stack" method="post" action="/admin/codes">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <h3>New batch</h3>
+    <div class="row" style="align-items: flex-end">
+      <label class="f" style="flex: 2 1 220px">Label <input type="text" name="label" required maxlength="120" placeholder="Reseller PH1 — November"></label>
+      <label class="f" style="flex: 1 1 120px">Quantity <input type="number" name="quantity" min="1" max="2000" value="10" required></label>
+      <label class="f" style="flex: 1 1 140px">Coins per code <input type="number" name="coins" min="1" max="1000000" value="1000" required></label>
+      <label class="f" style="flex: 1 1 180px">Reseller
+        <select name="resellerId"><option value="">— none (event / giveaway) —</option><% resellers.forEach(r => { %><option value="<%= r.id %>"><%= r.name %> (<%= r.prefix %>)</option><% }) %></select></label>
+      <label class="f" style="flex: 1 1 160px">Expires <input type="date" name="expires"></label>
+      <button class="btn" type="submit">Create codes</button>
+    </div>
+  </form>
+
+  <form class="card row" method="post" action="/admin/codes/lookup" style="align-items: flex-end">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <label class="f" style="flex: 1 1 300px">Check a code <input type="text" name="code" required autocomplete="off" placeholder="BL2-…"></label>
+    <button class="btn ghost" type="submit">Look up</button>
+  </form>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Label</th><th>Reseller</th><th>Coins</th><th>Used</th><th>Expires</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+      <% if (!batches.length) { %><tr><td colspan="8" class="muted">No batches yet.</td></tr><% } %>
+      <% batches.forEach(b => { %>
+        <tr><td><%= b.id %></td><td><%= b.label %></td><td><%= b.reseller ? b.reseller + ' (' + b.prefix + ')' : '—' %></td><td><%= b.coins %></td>
+          <td><%= b.used %> / <%= b.quantity %></td><td class="small"><%= b.expires_at ? new Date(b.expires_at).toISOString().slice(0, 10) : '—' %></td>
+          <td class="small"><%= new Date(b.created_at).toISOString().slice(0, 10) %></td>
+          <td><% if (b.disabled) { %><span class="pill failed">disabled</span><% } else { %><form class="inline" method="post" action="/admin/codes/<%= b.id %>/disable"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn sm danger" type="submit">Disable</button></form><% } %></td></tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+</div></section>
+<%- include('../partials/bottom') %>

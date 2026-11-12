@@ -1,0 +1,22 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'DOWNLOAD', heading: 'Get the game', sub: 'One account, one server — on PC and Android.' }) %>
+<section class="section" style="padding-top: 56px"><div class="container">
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(360px, 1fr))">
+    <% [['pc', 'PC', 'Full client with the auto-updating launcher.', [['Version', '[v0.0.0]'], ['Size', '[x.x] GB'], ['System', 'Windows 10 / 11, 64-bit'], ['Memory', '[4] GB RAM']], site.links.pc, site.links.pcMirror],
+        ['android', 'Android', 'APK installed directly, outside the Play Store.', [['Version', '[v0.2.x]'], ['Size', '[xxx] MB'], ['Android', '[8.0] or newer'], ['Memory', '[3] GB RAM']], site.links.android, site.links.androidMirror]].forEach(([id, t, d, rows, url, mirror]) => { %>
+      <div class="card stack" id="<%= id %>">
+        <h2 class="display" style="font-size: 36px"><%= t %></h2>
+        <p class="muted"><%= d %></p>
+        <div><% rows.forEach(([k, v]) => { %><div class="list-row"><span class="muted"><%= k %></span><span><%= v %></span></div><% }) %></div>
+        <div class="row"><a class="btn" href="<%= url %>" rel="noopener">Download <%= t %></a><a class="btn ghost" href="<%= mirror %>" rel="noopener">Mirror</a></div>
+      </div>
+    <% }) %>
+  </div>
+  <p class="muted" style="text-align: center">iOS is not available.</p>
+  <div class="grid">
+    <div class="card"><h3 style="margin-bottom: 12px">Install on PC</h3><ol class="plain"><li>Download and run the launcher installer.</li><li>Let the launcher download and patch the game.</li><li>Log in with your Blacklist account and press Start.</li><li>If Windows SmartScreen warns you, choose More info → Run anyway.</li></ol></div>
+    <div class="card"><h3 style="margin-bottom: 12px">Install on Android</h3><ol class="plain"><li>Download the APK on your phone.</li><li>Allow installs from this source when Android asks.</li><li>Open Blacklist TS2 and wait for the first data download.</li><li>Log in with the same account you use on PC.</li></ol></div>
+    <div class="card"><h3 style="margin-bottom: 12px">Problems?</h3><ul class="plain"><li>Stuck on “Data is being saved”: wait 10 seconds and log in again.</li><li>Black screen on PC: update your graphics driver.</li><li>Antivirus alarm: add the game folder as an exception.</li><li>Still stuck: open a ticket on <a href="<%= site.links.discord %>" style="color: var(--redhi)">Discord</a>.</li></ul></div>
+  </div>
+</div></section>
+<%- include('../partials/bottom') %>

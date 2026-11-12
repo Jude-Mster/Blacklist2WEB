@@ -1,0 +1,15 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'CHRONICLE', heading: 'News & events', sub: 'Updates, events and maintenance notices.' }) %>
+<section class="section" style="padding-top: 56px"><div class="container">
+  <% if (!news.length) { %><p class="muted">No news yet.</p><% } %>
+  <div class="grid">
+    <% news.forEach(n => { %>
+      <article class="card stack" style="gap: 10px">
+        <div class="row between"><span class="tag"><%= n.tag %></span><span class="dim small"><%= new Date(n.created_at).toISOString().slice(0, 10) %></span></div>
+        <h3><%= n.title %></h3><p class="muted small"><%= n.summary %></p>
+        <a href="/news/<%= n.id %>" class="label small" style="color: var(--redhi)">READ MORE</a>
+      </article>
+    <% }) %>
+  </div>
+</div></section>
+<%- include('../partials/bottom') %>

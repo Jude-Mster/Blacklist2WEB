@@ -1,0 +1,31 @@
+<%- include('../partials/top') %>
+<section class="section" style="padding-top: 40px"><div class="container">
+  <h1 class="display" style="font-size: 40px">GCash orders</h1>
+  <p class="muted">Open your GCash app, find a payment with the same <b>amount</b> and <b>reference number</b>, then approve. Never approve from a screenshot alone.</p>
+  <nav class="tabs"><% ['submitted', 'awaiting_payment', 'approved', 'rejected', 'expired'].forEach(s => { %><a href="/admin/orders?status=<%= s %>" class="<%= s === status ? 'on' : '' %>"><%= s.replace('_', ' ') %></a><% }) %></nav>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Order</th><th>Account</th><th>Amount</th><th>Coins</th><th>Reference</th><th>Time (UTC)</th><th>Action</th></tr></thead>
+    <tbody>
+      <% if (!rows.length) { %><tr><td colspan="7" class="muted">Nothing here.</td></tr><% } %>
+      <% rows.forEach(o => { %>
+        <tr>
+          <td class="label small"><%= o.order_no %></td>
+          <td><%= o.account_id %></td>
+          <td class="label">₱<%= Number(o.amount_php).toFixed(2) %></td>
+          <td><%= Number(o.coins).toLocaleString('en-US') %></td>
+          <td class="label"><%= o.reference_no || '—' %></td>
+          <td class="small muted"><%= new Date(o.submitted_at || o.created_at).toISOString().slice(0, 16).replace('T', ' ') %></td>
+          <td>
+            <% if (o.status === 'submitted') { %>
+              <div class="row" style="gap: 8px">
+                <form class="inline" method="post" action="/admin/orders/<%= o.id %>/approve"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn sm" type="submit">Approve</button></form>
+                <form class="inline row" style="gap: 6px" method="post" action="/admin/orders/<%= o.id %>/reject"><input type="hidden" name="_csrf" value="<%= csrf %>"><input type="text" name="note" placeholder="Reason" style="min-height: 36px; width: 140px"><button class="btn sm danger" type="submit">Reject</button></form>
+              </div>
+            <% } else { %><span class="pill <%= o.status %>"><%= o.status.replace('_', ' ') %></span><%= o.note ? ' ' + o.note : '' %><% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+</div></section>
+<%- include('../partials/bottom') %>

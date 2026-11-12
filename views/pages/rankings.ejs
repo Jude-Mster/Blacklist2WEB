@@ -1,0 +1,23 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'HALL OF LEGENDS', heading: 'Rankings', sub: 'Updated from the game every few minutes. GM and test characters are hidden.' }) %>
+<section class="section" style="padding-top: 56px"><div class="container">
+  <% if (offline) { %><div class="alert error">The game server is offline, so rankings cannot be loaded right now.</div><% } %>
+  <% if (factions.length) { %>
+  <div class="grid-sm">
+    <% factions.forEach(f => { %>
+      <div class="card stack" style="align-items: center; text-align: center; gap: 4px; padding: 22px"><span class="display" style="font-size: 28px"><%= f.name %></span><span class="muted small"><%= f.players %> players · <%= f.pkKillsWeek %> PK kills this week</span></div>
+    <% }) %>
+  </div>
+  <% } %>
+  <nav class="tabs" aria-label="Ranking type">
+    <% Object.entries(types).forEach(([k, label]) => { %><a href="/rankings?type=<%= k %>" class="<%= k === type ? 'on' : '' %>"><%= label %></a><% }) %>
+  </nav>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th><%= type === 'guild' ? 'Guild' : 'Character' %></th><th>Faction</th><th><%= types[type] === 'Guilds' ? 'Members' : types[type] %></th><% if (type !== 'guild') { %><th>Guild</th><% } %></tr></thead>
+    <tbody>
+      <% if (!rows.length) { %><tr><td colspan="5" class="muted">No rankings yet.</td></tr><% } %>
+      <% rows.forEach(r => { %><tr><td class="rank"><%= r.rank %></td><td><%= r.name %></td><td class="muted"><%= r.faction %></td><td><%= r.value %></td><% if (type !== 'guild') { %><td class="muted"><%= r.guild || '—' %></td><% } %></tr><% }) %>
+    </tbody>
+  </table></div>
+</div></section>
+<%- include('../partials/bottom') %>

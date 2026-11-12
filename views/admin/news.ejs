@@ -1,0 +1,25 @@
+<%- include('../partials/top') %>
+<section class="section" style="padding-top: 40px"><div class="container">
+  <h1 class="display" style="font-size: 40px">News</h1>
+  <form class="card stack" method="post" action="/admin/news">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+    <h3><%= edit ? 'Edit post' : 'New post' %></h3>
+    <div class="row" style="align-items: flex-end">
+      <label class="f" style="flex: 1 1 160px">Tag <select name="tag"><% ['Update', 'Event', 'Notice', 'Maintenance'].forEach(t => { %><option <%= edit && edit.tag === t ? 'selected' : '' %>><%= t %></option><% }) %></select></label>
+      <label class="f" style="flex: 4 1 320px">Title <input type="text" name="title" required maxlength="160" value="<%= edit ? edit.title : '' %>"></label>
+    </div>
+    <label class="f">Summary (shown on cards) <input type="text" name="summary" required maxlength="400" value="<%= edit ? edit.summary : '' %>"></label>
+    <label class="f">Full text <textarea name="body" maxlength="20000"><%= edit ? edit.body : '' %></textarea><span class="hint">Plain text. Leave an empty line between paragraphs.</span></label>
+    <label class="check"><input type="checkbox" name="published" value="1" <%= !edit || edit.published ? 'checked' : '' %>> Published</label>
+    <div class="row"><button class="btn" type="submit">Save</button><% if (edit) { %><a class="btn ghost" href="/admin/news">Cancel</a><% } %></div>
+  </form>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Tag</th><th>Title</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <% if (!rows.length) { %><tr><td colspan="5" class="muted">No posts yet.</td></tr><% } %>
+      <% rows.forEach(n => { %><tr><td class="small"><%= new Date(n.created_at).toISOString().slice(0, 10) %></td><td><%= n.tag %></td><td><%= n.title %></td><td><%= n.published ? 'Published' : 'Draft' %></td><td><a class="btn sm ghost" href="/admin/news?edit=<%= n.id %>">Edit</a></td></tr><% }) %>
+    </tbody>
+  </table></div>
+</div></section>
+<%- include('../partials/bottom') %>

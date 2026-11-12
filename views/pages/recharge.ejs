@@ -1,0 +1,50 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'RECHARGE', heading: 'Premium coins', sub: 'Coins are spent in the in-game Item Mall. Pay with GCash, or redeem a code from an official reseller.' }) %>
+<% const fmt = (n) => Number(n).toLocaleString('en-US'); %>
+<section class="section" style="padding-top: 48px"><div class="container">
+
+  <div class="stack">
+    <div class="heading left"><span class="kicker">Option 1</span><h2>Pay with GCash</h2></div>
+    <p class="muted">Pick a pack. You'll get an exact amount to send and an order number. Coins are added after staff confirm the payment.</p>
+    <div class="packs">
+      <% packs.forEach(p => { %>
+        <form class="pack" method="post" action="/recharge/order">
+          <input type="hidden" name="_csrf" value="<%= csrf %>"><input type="hidden" name="packId" value="<%= p.id %>">
+          <span class="c"><%= fmt(p.coins) %></span>
+          <span class="label dim small">PREMIUM COINS</span>
+          <span class="b"><%= p.bonus ? '+' + fmt(p.bonus) + ' bonus' : '' %></span>
+          <span class="p">₱<%= fmt(p.price_php) %></span>
+          <% if (user) { %><button class="btn sm" type="submit">Buy</button><% } else { %><a class="btn sm ghost" href="/login">Log in to buy</a><% } %>
+        </form>
+      <% }) %>
+    </div>
+  </div>
+
+  <div class="paybox">
+    <form class="card stack" id="redeem" method="post" action="/recharge/redeem">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="heading left"><span class="kicker">Option 2</span><h2 style="font-size: 34px">Redeem a code</h2></div>
+      <p class="muted small">Codes look like <span class="label">BL2-XXXX-XXXX-XXXX</span>. Each code works once and is tied to the account that uses it.</p>
+      <% if (user) { %>
+        <label class="f">Code <input type="text" name="code" required maxlength="40" autocomplete="off" spellcheck="false" placeholder="BL2-…"></label>
+        <button class="btn" type="submit">Redeem</button>
+      <% } else { %><a class="btn ghost" href="/login">Log in to redeem</a><% } %>
+    </form>
+    <div class="card stack">
+      <h3>Official resellers</h3>
+      <p class="muted small">Buy codes only from these sellers. They accept local payments such as GCash, Maya or bank transfer.</p>
+      <% if (!resellers.length) { %><p class="muted">Resellers will be listed here soon.</p><% } %>
+      <% resellers.forEach(r => { %>
+        <div class="list-row"><span><span class="label"><%= r.name %></span> <span class="dim small">(<%= r.prefix %>)</span><br><span class="muted small"><%= r.country %><%= r.methods ? ' · ' + r.methods : '' %></span></span>
+          <% if (/^https?:\/\//.test(r.contact)) { %><a class="btn sm ghost" href="<%= r.contact %>" rel="noopener nofollow">Contact</a><% } else { %><span class="muted small"><%= r.contact %></span><% } %></div>
+      <% }) %>
+    </div>
+  </div>
+
+  <div class="card"><h3 style="margin-bottom: 8px">Before you buy</h3><ul class="plain">
+    <li>Coins are digital and delivered right away, so all purchases are final and non-refundable.</li>
+    <li>Opening a payment dispute bans the account.</li>
+    <li>Only buy codes from the official resellers above.</li>
+  </ul></div>
+</div></section>
+<%- include('../partials/bottom') %>

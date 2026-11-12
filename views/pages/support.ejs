@@ -1,0 +1,46 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'HELP CENTRE', heading: 'Guide, rules & terms', sub: 'Answers to common questions, the server rules and the terms that apply to every account.' }) %>
+<section class="section" style="padding-top: 56px"><div class="container">
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); align-items: start">
+    <div class="card" id="faq">
+      <h2 class="display" style="font-size: 30px; margin-bottom: 6px">FAQ</h2>
+      <% [['Is the game free?', 'Yes. Recharge is optional and only buys premium coins for the in-game Item Mall.'],
+          ['Can I play on PC and phone with one account?', 'Yes. Both connect to the same server and share characters.'],
+          ['How long does a GCash recharge take?', 'After you submit the 13-digit reference number, staff check the payment and add the coins, usually within a few hours.'],
+          ['Where do I get a recharge code?', 'From an official reseller listed on the Recharge page. Codes from anyone else may be stolen and can be disabled.'],
+          ['I am stuck on “Data is being saved”.', 'Wait 10 seconds and log in again. The server closes the old session first.'],
+          ['How does PK work?', 'Toggle PK under your HP bar. Same-faction kills outside the capitals add 10 points; 30 = red name, 100 = black name. Points drop by 1 every 6 minutes online.'],
+          ['How do I get auto-buff?', 'Buy an auto-buff scroll (1, 7 or 30 days) in the in-game Item Mall.']].forEach(([q, a]) => { %>
+        <details><summary><%= q %></summary><p><%= a %></p></details>
+      <% }) %>
+    </div>
+    <div class="stack" style="gap: 24px">
+      <div class="card" id="rules">
+        <h2 class="display" style="font-size: 30px; margin-bottom: 14px">Server rules</h2>
+        <ul class="plain">
+          <li>No cheats, third-party bots, speed hacks or packet editing. The built-in auto-hunt is allowed.</li>
+          <li>No exploiting bugs. Report them on Discord for a reward.</li>
+          <li>No real-money trading of items, silver or accounts outside the official Recharge and resellers.</li>
+          <li>No scamming, impersonating staff or harassment.</li>
+          <li>Staff decisions on bans are final. Appeals go through Discord.</li>
+        </ul>
+      </div>
+      <div class="card" id="terms">
+        <h2 class="display" style="font-size: 30px; margin-bottom: 14px">Terms &amp; refund policy</h2>
+        <ul class="plain">
+          <li>Premium coins are a licence to use in-game features. They have no cash value and cannot be exchanged back for money.</li>
+          <li>Coins are delivered right after the payment is confirmed or the code is redeemed, so all sales are final and non-refundable.</li>
+          <li>Opening a payment dispute or chargeback permanently bans the account and linked accounts.</li>
+          <li>Codes bought from anyone other than an official reseller may be disabled without refund.</li>
+          <li>We may change, rebalance or close the server at any time. Unused coins are not refunded.</li>
+          <li>Players under 18 need permission from a parent or guardian before recharging.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card row between">
+    <div class="stack" style="gap: 6px"><h2 class="display" style="font-size: 30px">Still need help?</h2><p class="muted">Open a ticket on Discord with your account ID and a screenshot.</p></div>
+    <a class="btn" href="<%= site.links.discord %>" rel="noopener">Open Discord</a>
+  </div>
+</div></section>
+<%- include('../partials/bottom') %>

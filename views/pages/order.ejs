@@ -1,0 +1,39 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'GCASH ORDER', heading: 'Order ' + order.order_no, sub: Number(order.coins).toLocaleString('en-US') + ' premium coins' }) %>
+<section class="section" style="padding-top: 48px"><div class="container">
+  <% if (order.status === 'awaiting_payment') { %>
+    <div class="paybox">
+      <div class="card stack">
+        <h3>1 · Send exactly</h3>
+        <span class="amount">₱<%= Number(order.amount_php).toFixed(2) %></span>
+        <p class="muted small">Send this exact amount, centavos included. It is how we match your payment to this order.</p>
+        <div class="list-row"><span class="muted">GCash name</span><span><%= gcash.name %></span></div>
+        <div class="list-row"><span class="muted">GCash number</span><span class="label"><%= gcash.number %></span></div>
+        <div class="list-row"><span class="muted">Message / note</span><span class="label"><%= order.order_no %></span></div>
+        <% if (gcash.qr) { %><img src="<%= gcash.qr %>" alt="GCash QR code" style="max-width: 260px; border-radius: 6px"><% } %>
+        <p class="dim small">Pay before <%= new Date(order.expires_at).toISOString().slice(11, 16) %> UTC, or the order expires.</p>
+      </div>
+      <form class="card stack" method="post" action="/recharge/order/<%= order.order_no %>/reference">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <h3>2 · Enter the reference number</h3>
+        <p class="muted small">Find the 13-digit <b>Ref No.</b> on your GCash receipt and enter it here.</p>
+        <label class="f">GCash reference number <input type="text" name="reference" inputmode="numeric" required maxlength="20" placeholder="0000 000 000000" autocomplete="off"></label>
+        <button class="btn big" type="submit">I have paid</button>
+      </form>
+    </div>
+  <% } else { %>
+    <div class="card stack" style="max-width: 640px">
+      <h3>Status: <span class="pill <%= order.status %>"><%= order.status.replace('_', ' ') %></span></h3>
+      <div class="list-row"><span class="muted">Amount</span><span>₱<%= Number(order.amount_php).toFixed(2) %></span></div>
+      <% if (order.reference_no) { %><div class="list-row"><span class="muted">Reference</span><span><%= order.reference_no %></span></div><% } %>
+      <p class="muted">
+        <% if (order.status === 'submitted') { %>We are checking your payment. Coins are added as soon as it is confirmed, usually within a few hours.
+        <% } else if (order.status === 'approved') { %>Payment confirmed. Your coins are in your Item Mall balance.
+        <% } else if (order.status === 'rejected') { %>We could not match this payment<%= order.note ? ': ' + order.note : '' %>. Open a Discord ticket with your receipt if you did pay.
+        <% } else { %>This order expired before a reference number was entered. If you already paid, open a Discord ticket with your receipt.<% } %>
+      </p>
+      <div class="row"><a class="btn ghost" href="/account">My account</a><a class="btn ghost" href="/recharge">Recharge</a></div>
+    </div>
+  <% } %>
+</div></section>
+<%- include('../partials/bottom') %>

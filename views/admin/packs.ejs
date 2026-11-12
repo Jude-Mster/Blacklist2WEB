@@ -1,0 +1,19 @@
+<%- include('../partials/top') %>
+<section class="section" style="padding-top: 40px"><div class="container">
+  <h1 class="display" style="font-size: 40px">Coin packs</h1>
+  <p class="muted">Changes apply to new orders only. Orders already placed keep their price and coins.</p>
+  <% [...rows, null].forEach(p => { %>
+    <form class="card row" method="post" action="/admin/packs" style="align-items: flex-end">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <% if (p) { %><input type="hidden" name="id" value="<%= p.id %>"><% } else { %><h3 style="flex: 1 1 100%">New pack</h3><% } %>
+      <label class="f" style="flex: 1 1 120px">Coins <input type="number" name="coins" min="1" required value="<%= p ? p.coins : '' %>"></label>
+      <label class="f" style="flex: 1 1 120px">Bonus <input type="number" name="bonus" min="0" value="<%= p ? p.bonus : 0 %>"></label>
+      <label class="f" style="flex: 1 1 140px">Price ₱ <input type="number" name="price_php" min="1" step="1" required value="<%= p ? Math.floor(p.price_php) : '' %>"><span class="hint">Whole pesos; centavos are added per order</span></label>
+      <label class="f" style="flex: 1 1 120px">Price $ <input type="number" name="price_usd" min="0" step="0.01" value="<%= p && p.price_usd != null ? p.price_usd : '' %>"></label>
+      <label class="f" style="flex: 1 1 90px">Order <input type="number" name="sort" value="<%= p ? p.sort : 0 %>"></label>
+      <label class="check"><input type="checkbox" name="active" value="1" <%= !p || p.active ? 'checked' : '' %>> Active</label>
+      <button class="btn sm" type="submit"><%= p ? 'Save' : 'Add' %></button>
+    </form>
+  <% }) %>
+</div></section>
+<%- include('../partials/bottom') %>

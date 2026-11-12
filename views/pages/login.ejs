@@ -1,0 +1,15 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'WELCOME BACK', heading: 'Log in', sub: 'Use your game account ID and password.' }) %>
+<section class="section" style="padding-top: 56px"><div class="container" style="max-width: 520px">
+  <form class="card stack" method="post" action="/login">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <% if (error) { %><div class="alert error" role="alert"><%= error %></div><% } %>
+    <label class="f">Account ID <input type="text" name="accountId" value="<%= accountId %>" required autocomplete="username"></label>
+    <label class="f">Password <input type="password" name="password" required autocomplete="current-password"></label>
+    <button class="btn big" type="submit">Log in</button>
+    <p class="muted small">Made your account in game before the website existed? Just log in with the same ID and password.</p>
+    <p class="muted small">Forgot your password? Open a ticket on <a href="<%= site.links.discord %>" style="color: var(--redhi)">Discord</a> from the email you registered with.</p>
+    <p class="muted small">New here? <a href="/register" style="color: var(--redhi)">Create an account</a></p>
+  </form>
+</div></section>
+<%- include('../partials/bottom') %>

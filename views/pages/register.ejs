@@ -1,0 +1,36 @@
+<%- include('../partials/top') %>
+<%- include('../partials/band', { kicker: 'JOIN THE LIST', heading: 'Create your account', sub: 'Free to play. One account for PC and Android.' }) %>
+<section class="section" style="padding-top: 56px"><div class="container">
+  <div class="row" style="gap: 40px; align-items: flex-start">
+    <form class="card stack" method="post" action="/register" style="flex: 1 1 460px" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <h2 class="display" style="font-size: 32px">Create account</h2>
+      <% if (errors.length) { %><div class="alert error" role="alert"><ul><% errors.forEach(e => { %><li><%= e %></li><% }) %></ul></div><% } %>
+      <label class="f">Account ID
+        <input type="text" name="accountId" value="<%= form.accountId || '' %>" required minlength="4" maxlength="12" pattern="[A-Za-z0-9]{4,12}" autocomplete="username">
+        <span class="hint">4–12 letters or numbers. This is your game login and cannot be changed.</span></label>
+      <label class="f">Email
+        <input type="email" name="email" value="<%= form.email || '' %>" required autocomplete="email">
+        <span class="hint">Used for account recovery and recharge receipts.</span></label>
+      <label class="f">Password <input type="password" name="password" required minlength="8" maxlength="32" autocomplete="new-password"></label>
+      <label class="f">Confirm password <input type="password" name="password2" required minlength="8" maxlength="32" autocomplete="new-password"></label>
+      <label class="f">Referral code <input type="text" name="referral" value="<%= form.referral || '' %>" maxlength="32"><span class="hint">Optional</span></label>
+      <% if (turnstileKey) { %>
+        <div class="cf-turnstile" data-sitekey="<%= turnstileKey %>" data-theme="dark"></div>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+      <% } %>
+      <label class="check"><input type="checkbox" name="terms" value="1"> <span>I agree to the <a href="/support#rules" style="color: var(--redhi)">server rules</a> and the <a href="/support#terms" style="color: var(--redhi)">terms and refund policy</a>.</span></label>
+      <button class="btn big" type="submit">Create account</button>
+      <p class="muted small" style="text-align: center">Already have an account? <a href="/login" style="color: var(--redhi)">Log in</a></p>
+    </form>
+    <div class="stack" style="flex: 1 1 380px; gap: 24px">
+      <div class="card stack">
+        <% [['1', 'Create your account', 'One account works on both PC and Android.'], ['2', 'Download the game', 'Get the PC launcher or the Android APK.'], ['3', 'Pick your faction', 'Choose your side when you make your first character.'], ['4', 'Check your Compensation box', 'Maintenance rewards and gifts arrive there in game.']].forEach(([n, t, d]) => { %>
+          <div class="row" style="align-items: flex-start; flex-wrap: nowrap"><span class="display" style="font-size: 30px; color: var(--red2); width: 30px"><%= n %></span><div><h3 style="font-size: 18px"><%= t %></h3><p class="muted small"><%= d %></p></div></div>
+        <% }) %>
+      </div>
+      <div class="card stack" style="gap: 8px"><h3 style="font-size: 18px">Keep your account safe</h3><p class="muted small">Staff will never ask for your password. Use a password you do not use anywhere else.</p></div>
+    </div>
+  </div>
+</div></section>
+<%- include('../partials/bottom') %>

@@ -1,0 +1,17 @@
+<%- include('../partials/top') %>
+<section class="section" style="padding-top: 40px"><div class="container">
+  <h1 class="display" style="font-size: 44px">Admin</h1>
+  <div class="row" style="gap: 14px">
+    <a class="stat" href="/admin/orders"><div class="k">ORDERS TO CHECK</div><div class="v"><%= stats.pending %></div></a>
+    <a class="stat" href="/admin/credits"><div class="k">FAILED DELIVERIES</div><div class="v"><%= stats.failed %></div></a>
+    <a class="stat" href="/admin/users"><div class="k">WEBSITE USERS</div><div class="v"><%= stats.users %></div></a>
+    <div class="stat"><div class="k">GCASH · 30 DAYS</div><div class="v">₱<%= Number(stats.php30).toLocaleString('en-US') %></div></div>
+    <div class="stat"><div class="k">CODES USED · 30 DAYS</div><div class="v"><%= stats.codes30 %></div></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom: 10px">Recent admin actions</h3>
+    <% if (!recent.length) { %><p class="muted">Nothing yet.</p><% } %>
+    <% recent.forEach(r => { %><div class="list-row"><span><%= r.account_id %> · <span class="label small"><%= r.action %></span></span><span class="muted small"><%= r.detail %></span><span class="dim small"><%= new Date(r.created_at).toISOString().slice(0, 16).replace('T', ' ') %></span></div><% }) %>
+  </div>
+</div></section>
+<%- include('../partials/bottom') %>

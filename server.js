@@ -11,6 +11,9 @@ const game = require('./src/game');
 const { csrf } = require('./src/middleware/security');
 const { loadUser } = require('./src/middleware/auth');
 const { flash } = require('./src/services/flash');
+const { globalLimiter } = require('./src/middleware/security');
+const { sameOrigin } = require('./src/middleware/origin');
+const log = require('./src/log');
 
 const app = express();
 app.set('trust proxy', 1); // Hostinger serves the app behind a proxy
@@ -32,7 +35,9 @@ app.use(helmet({
 }));
 
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: config.isProd ? '7d' : 0 }));
-app.get('/healthz', (req, res) => res.json({ ok: true, comingSoon: config.comingSoon, db: dbReady, problems: config.problems }));
+// Health check: details only outside production (setup problems are printed to the server log).
+app.get('/healthz', (req, res) => res.json(config.isProd ? { ok: true } : { ok: true, comingSoon: config.comingSoon, db: dbReady, problems: config.problems }));
+app.use(globalLimiter);
 
 // Values every page needs (set first, so even error pages can render)
 app.use((req, res, next) => {
@@ -49,11 +54,12 @@ app.use((req, res, next) => {
 // even while the database is not set up. Visitors with a login cookie go on to the full check.
 app.use(require('./src/middleware/comingSoon').earlyComingSoon);
 
-app.use(express.urlencoded({ extended: false, limit: '64kb' }));
+app.use(express.urlencoded({ extended: false, limit: '64kb', parameterLimit: 50 }));
+app.use(sameOrigin);
 
 const sessionStore = new MySQLStore({ createDatabaseTable: true, clearExpired: true }, db.pool);
 let dbReady = false;
-sessionStore.onReady().then(() => { dbReady = true; }).catch((e) => console.error('Database not reachable:', e.message));
+sessionStore.onReady().then(() => { dbReady = true; }).catch((e) => console.error('Database not reachable:', log.clean(e.message)));
 app.use(session({
   name: 'b2sid',
   secret: config.sessionSecret,
@@ -83,7 +89,7 @@ app.use((req, res) => res.status(404).render('pages/error', { title: 'Not found'
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error(new Date().toISOString(), req.method, req.originalUrl, err);
+  log.requestError(req, err);
   res.status(500).render('pages/error', { title: 'Something went wrong', message: 'An error happened on our side. Please try again in a minute.' });
 });
 
@@ -93,7 +99,7 @@ async function syncAdmins() {
   if (ids.length) await db.run("UPDATE users SET role = 'admin' WHERE account_id IN (?)", [ids]);
 }
 
-process.on('unhandledRejection', (e) => console.error('Unhandled rejection:', e && e.message ? e.message : e));
+process.on('unhandledRejection', (e) => console.error('Unhandled rejection:', log.clean(e && e.message ? e.message : e)));
 
 if (require.main === module) {
   // Always start listening first, so the site (at least the Coming Soon page) is up even when
@@ -105,7 +111,7 @@ if (require.main === module) {
   const setup = () => require('./scripts/migrate').migrate()
     .then(syncAdmins)
     .then(() => { dbReady = true; return true; })
-    .catch((e) => { console.error('Database setup failed (will retry in 60 s):', e.message); return false; });
+    .catch((e) => { console.error('Database setup failed (will retry in 60 s):', log.clean(e.message)); return false; });
   setup().then((ok) => {
     const timer = setInterval(async () => {
       if (!dbReady && !(await setup())) return;

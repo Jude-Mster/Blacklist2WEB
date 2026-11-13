@@ -3,7 +3,11 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 const game = require('../game');
-const { requireUser } = require('../middleware/auth');
+const { requireUser, requireVerified } = require('../middleware/auth');
+const { mailLimiter, passwordLimiter } = require('../middleware/security');
+const emailVerify = require('../services/emailVerify');
+
+const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 
 const router = express.Router();
 const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next);
@@ -22,7 +26,17 @@ router.get('/', wrap(async (req, res) => {
   res.render('pages/account', { title: 'My account', characters, balance, orders, credits });
 }));
 
-router.post('/password', wrap(async (req, res) => {
+router.post('/email', mailLimiter, wrap(async (req, res) => {
+  const email = String(req.body.email || req.user.email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email) || email.length > 190) { req.flash('error', 'Enter a valid email address.'); return res.redirect('/account#email'); }
+  const other = await db.one('SELECT id FROM users WHERE email = ? AND id <> ?', [email, req.user.id]);
+  if (other) { req.flash('error', 'That email is already used by another account.'); return res.redirect('/account#email'); }
+  const sent = await emailVerify.sendLink(req.user, email);
+  req.flash(sent ? 'ok' : 'error', sent ? `Confirmation link sent to ${email}. It works for 24 hours.` : 'We could not send the email right now. Try again in a few minutes.');
+  res.redirect('/account#email');
+}));
+
+router.post('/password', requireVerified, passwordLimiter, wrap(async (req, res) => {
   const current = String(req.body.current || '');
   const next = String(req.body.password || '');
   const u = await db.one('SELECT pass_hash FROM users WHERE id = ?', [req.user.id]);

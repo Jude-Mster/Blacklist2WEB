@@ -1,5 +1,5 @@
 'use strict';
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const env = (k, d = '') => (process.env[k] ?? d);
 const isProd = env('NODE_ENV') === 'production';
@@ -50,6 +50,13 @@ module.exports = {
     number: env('GCASH_NUMBER'),
     qr: env('GCASH_QR'),
     orderTtlMinutes: Number(env('ORDER_TTL_MINUTES', '60')),
+  },
+  smtp: {
+    host: env('SMTP_HOST'),
+    port: Number(env('SMTP_PORT', '465')),
+    user: env('SMTP_USER'),
+    pass: env('SMTP_PASS'),
+    from: env('MAIL_FROM', `Blacklist TS2 <${env('SMTP_USER', 'no-reply@blacklist2.com')}>`),
   },
   turnstile: { siteKey: env('TURNSTILE_SITE_KEY'), secret: env('TURNSTILE_SECRET') },
   links: {

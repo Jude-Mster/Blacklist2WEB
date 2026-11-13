@@ -3,7 +3,7 @@ const config = require('../config');
 
 // Paths that keep working while the site is in Coming Soon mode, so staff can log in and
 // use the admin panel, and the page can load its own files.
-const OPEN = [/^\/login$/, /^\/logout$/, /^\/admin(\/|$)/, /^\/css\//, /^\/img\//, /^\/js\//, /^\/favicon/, /^\/healthz$/];
+const OPEN = [/^\/login$/, /^\/logout$/, /^\/admin(\/|$)/, /^\/css\//, /^\/img\//, /^\/js\//, /^\/favicon/, /^\/healthz$/, /^\/verify-email$/];
 
 function render(res) {
   res.set('Cache-Control', 'no-store');

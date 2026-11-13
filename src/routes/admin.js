@@ -9,7 +9,12 @@ const { requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 router.use(requireAdmin);
-router.use((req, res, next) => { res.locals.admin = true; next(); });
+router.use((req, res, next) => {
+  res.locals.admin = true;
+  res.set('Cache-Control', 'no-store'); // admin pages are never cached by browsers or proxies
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
 
 const log = (req, action, detail = '') => db.run('INSERT INTO admin_log (admin_id, action, detail) VALUES (?, ?, ?)', [req.user.id, action, String(detail).slice(0, 500)]);
 const int = (v, d = 0) => (Number.isFinite(Number(v)) ? Math.trunc(Number(v)) : d);

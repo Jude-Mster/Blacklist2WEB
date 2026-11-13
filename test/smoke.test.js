@@ -8,6 +8,7 @@ const http = require('http');
 process.env.COMING_SOON = 'false'; // this test covers the full site
 const app = require('../server');
 const db = require('../src/db');
+const mailer = require('../src/services/mailer');
 
 let server;
 let base;
@@ -67,6 +68,25 @@ test('register, order, approve, codes', async () => {
   assert.strictEqual(r.location, '/account');
   r = await p.req('GET', '/account');
   assert.match(r.text, new RegExp(`Welcome, ${ID}`));
+  assert.match(r.text, /Confirm your email/);
+  // not verified yet: recharge is refused
+  const pack0 = await db.one('SELECT id FROM packs WHERE active = 1 ORDER BY sort LIMIT 1');
+  r = await p.req('POST', '/recharge/order', { _csrf: await p.csrf('/recharge'), packId: pack0.id });
+  assert.strictEqual(r.location, '/account#email');
+  // the confirmation mail went out; a wrong token fails, the real one verifies
+  const mail = mailer.outbox.filter((m) => m.to === `${ID}@example.com`).pop();
+  assert.ok(mail, 'confirmation email sent');
+  const link = mail.text.match(/\/verify-email\?token=([A-Za-z0-9_-]+)/);
+  assert.ok(link);
+  assert.strictEqual((await p.req('GET', '/verify-email?token=' + 'x'.repeat(43))).status, 400);
+  r = await p.req('GET', '/verify-email?token=' + link[1]);
+  assert.strictEqual(r.location, '/account');
+  assert.strictEqual((await p.req('GET', '/verify-email?token=' + link[1])).status, 400, 'token is single-use');
+  r = await p.req('GET', '/account');
+  assert.match(r.text, /confirmed/);
+  // a cross-site form post is refused even with a valid token
+  const cross = await fetch(base + '/recharge/order', { method: 'POST', redirect: 'manual', headers: { origin: 'https://evil.example', 'content-type': 'application/x-www-form-urlencoded' }, body: 'packId=1' });
+  assert.strictEqual(cross.status, 403);
   // duplicate account id
   const q = client();
   r = await q.req('POST', '/register', { _csrf: await q.csrf('/register'), accountId: ID.toUpperCase(), email: `x${ID}@example.com`, password: 'goodpass123', password2: 'goodpass123', terms: '1' });

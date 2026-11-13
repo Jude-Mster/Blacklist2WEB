@@ -13,7 +13,7 @@ signed private API to the game server.
 | Recharge | GCash manual orders (exact amount with unique centavos + 13-digit reference), redeem codes, official reseller list |
 | Admin `/admin` | Approve/reject GCash orders, coin deliveries (retry, give coins), code batches (create, disable, look up), resellers, coin packs, news, users (ban) |
 
-Security: bcrypt passwords, CSRF tokens on every form, rate limits on login/register/redeem/orders,
+Security (full checklist in [CLAUDE.md](CLAUDE.md)): email verification, bcrypt passwords, CSRF tokens on every form, rate limits on login/register/redeem/orders,
 Helmet headers + CSP, sessions in MySQL, codes stored only as salted hashes, every coin grant
 recorded once and applied once (safe to retry).
 
@@ -53,7 +53,12 @@ npm test                  # end-to-end test (needs the DB from .env)
 5. **Domain**: point `blacklist2.com` at the web app in hPanel and turn on SSL.
 6. **Admin**: register (or log in) on the site with your game account, then put that account ID in
    `ADMIN_ACCOUNTS` and redeploy. `/admin` appears in the header.
-7. **GCash**: set `GCASH_NAME`, `GCASH_NUMBER`, and optionally upload a QR image to `public/img/`
+7. **Email**: hPanel → Emails → create `no-reply@blacklist2.com`, then set `SMTP_HOST=smtp.hostinger.com`,
+   `SMTP_PORT=465`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`. Players must confirm their email before
+   recharge, codes or a password change.
+8. **Security scan**: GitHub → repo Settings → Secrets and variables → Actions → new secret
+   `CLAUDE_API_KEY` (an Anthropic API key). Every pull request then gets an AI security review.
+9. **GCash**: set `GCASH_NAME`, `GCASH_NUMBER`, and optionally upload a QR image to `public/img/`
    and set `GCASH_QR=/img/your-qr.png`.
 
 Every push to `main` redeploys the site.

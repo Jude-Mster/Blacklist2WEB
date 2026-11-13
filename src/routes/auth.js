@@ -5,6 +5,7 @@ const config = require('../config');
 const db = require('../db');
 const game = require('../game');
 const { loginLimiter, registerLimiter } = require('../middleware/security');
+const emailVerify = require('../services/emailVerify');
 
 const router = express.Router();
 const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next);
@@ -74,8 +75,12 @@ router.post('/register', registerLimiter, wrap(async (req, res) => {
   const r = await db.run(
     'INSERT INTO users (account_id, email, pass_hash, referral_code, last_login_at, last_ip) VALUES (?, ?, ?, ?, NOW(), ?)',
     [form.accountId, form.email, hash, form.referral || null, req.ip]);
+  const sent = await emailVerify.sendLink({ id: r.insertId, account_id: form.accountId }, form.email);
   await signIn(req, { id: r.insertId });
   req.flash('ok', 'Welcome to Blacklist TS2! Your account works on both PC and Android.');
+  req.flash(sent ? 'ok' : 'error', sent
+    ? `We sent a confirmation link to ${form.email}. Open it to unlock recharge and codes.`
+    : 'We could not send the confirmation email right now. Use "Send a new link" below in a few minutes.');
   res.redirect('/account');
 }));
 
@@ -107,6 +112,15 @@ router.post('/login', loginLimiter, wrap(async (req, res) => {
   const back = req.session.returnTo;
   await signIn(req, user);
   res.redirect(back && back.startsWith('/') && !back.startsWith('//') ? back : '/account');
+}));
+
+router.get('/verify-email', wrap(async (req, res) => {
+  const userId = await emailVerify.confirm(typeof req.query.token === 'string' ? req.query.token : '');
+  if (!userId) {
+    return res.status(400).render('pages/error', { title: 'Link not valid', message: 'This confirmation link is wrong, already used or older than 24 hours. Log in and send a new one from your account page.' });
+  }
+  req.flash('ok', 'Email confirmed. Recharge and codes are unlocked.');
+  res.redirect(req.user ? '/account' : '/login');
 }));
 
 router.post('/logout', (req, res) => {

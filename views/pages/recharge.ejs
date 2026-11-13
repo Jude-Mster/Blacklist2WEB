@@ -3,6 +3,9 @@
 <% const fmt = (n) => Number(n).toLocaleString('en-US'); %>
 <section class="section" style="padding-top: 48px"><div class="container">
 
+  <% if (user && !user.email_verified_at) { %>
+    <div class="alert error">Confirm your email before you recharge or redeem a code. <a href="/account#email" style="color: var(--redhi)">Send the link again</a></div>
+  <% } %>
   <div class="stack">
     <div class="heading left"><span class="kicker">Option 1</span><h2>Pay with GCash</h2></div>
     <p class="muted">Pick a pack. You'll get an exact amount to send and an order number. Coins are added after staff confirm the payment.</p>

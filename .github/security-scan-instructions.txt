@@ -1,0 +1,10 @@
+This is a Node.js / Express 5 / EJS / MySQL website for a game server that sells in-game coins.
+Pay extra attention to:
+- SQL built from user input instead of "?" placeholders in src/db.js calls.
+- Routes under /account, /recharge and /admin that do not check ownership (req.user.id) or the admin role on the server.
+- Coin grants that could run twice (coin_credits must stay unique per source), and order or code state changes without a transaction.
+- EJS "<%-" output of user data, links built from user data that are not http(s), and inline scripts that would break the CSP.
+- Secrets, tokens, passwords, codes, emails or query strings written to logs.
+- Webhook handlers that do not verify the signature on the raw body or trust the amount from the request.
+- Missing CSRF token checks on POST routes, or new CORS headers.
+- Tokens or session data stored in localStorage.

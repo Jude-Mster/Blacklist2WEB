@@ -1,0 +1,38 @@
+name: Security Review
+
+# AI security scan of every pull request (anthropics/claude-code-security-review).
+# Needs the repository secret CLAUDE_API_KEY (Settings > Secrets and variables > Actions).
+# The action is not hardened against prompt injection: only run it on trusted PRs.
+
+permissions:
+  pull-requests: write # to leave review comments
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - uses: anthropics/claude-code-security-review@main
+        with:
+          comment-pr: true
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          exclude-directories: node_modules,public/img
+          custom-security-scan-instructions: .github/security-scan-instructions.txt
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=moderate

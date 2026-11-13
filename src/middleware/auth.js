@@ -5,7 +5,7 @@ const db = require('../db');
 async function loadUser(req, res, next) {
   req.user = null;
   if (req.session.userId) {
-    const u = await db.one('SELECT id, account_id, email, role, banned, created_at FROM users WHERE id = ?', [req.session.userId]);
+    const u = await db.one('SELECT id, account_id, email, email_verified_at, role, banned, created_at FROM users WHERE id = ?', [req.session.userId]);
     if (u && !u.banned) req.user = u;
     else delete req.session.userId;
   }
@@ -24,4 +24,11 @@ function requireAdmin(req, res, next) {
   res.status(404).render('pages/error', { title: 'Not found', message: 'This page does not exist.' });
 }
 
-module.exports = { loadUser, requireUser, requireAdmin };
+/** Recharge, codes and password changes need a confirmed email address. */
+function requireVerified(req, res, next) {
+  if (req.user && req.user.email_verified_at) return next();
+  req.flash('error', 'Confirm your email address first. We sent you a link; you can send a new one below.');
+  res.redirect('/account#email');
+}
+
+module.exports = { loadUser, requireUser, requireAdmin, requireVerified };

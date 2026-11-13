@@ -4,7 +4,7 @@ const config = require('../config');
 const db = require('../db');
 const orders = require('../services/orders');
 const codes = require('../services/codes');
-const { requireUser } = require('../middleware/auth');
+const { requireUser, requireVerified } = require('../middleware/auth');
 const { redeemLimiter, orderLimiter } = require('../middleware/security');
 
 const router = express.Router();
@@ -16,7 +16,7 @@ router.get('/', wrap(async (req, res) => {
   res.render('pages/recharge', { title: 'Recharge', packs, resellers });
 }));
 
-router.post('/order', requireUser, orderLimiter, wrap(async (req, res) => {
+router.post('/order', requireUser, requireVerified, orderLimiter, wrap(async (req, res) => {
   const r = await orders.create(req.user, Number(req.body.packId) || 0);
   if (r.error) { req.flash('error', r.error); return res.redirect('/recharge'); }
   res.redirect(`/recharge/order/${r.orderNo}`);
@@ -29,14 +29,14 @@ router.get('/order/:no', requireUser, wrap(async (req, res, next) => {
   res.render('pages/order', { title: `Order ${order.order_no}`, order, gcash: config.gcash });
 }));
 
-router.post('/order/:no/reference', requireUser, orderLimiter, wrap(async (req, res) => {
+router.post('/order/:no/reference', requireUser, requireVerified, orderLimiter, wrap(async (req, res) => {
   const r = await orders.submitReference(req.user, req.params.no, req.body.reference);
   if (r.error) req.flash('error', r.error);
   else req.flash('ok', 'Thanks! We will check the payment and add your coins, usually within a few hours.');
   res.redirect(`/recharge/order/${encodeURIComponent(req.params.no)}`);
 }));
 
-router.post('/redeem', requireUser, redeemLimiter, wrap(async (req, res) => {
+router.post('/redeem', requireUser, requireVerified, redeemLimiter, wrap(async (req, res) => {
   const r = await codes.redeem(req.user, req.body.code);
   if (r.error) req.flash('error', r.error);
   else if (r.delivered) req.flash('ok', `Code accepted: ${r.coins.toLocaleString('en-US')} coins added to your Item Mall balance.`);

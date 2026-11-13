@@ -30,4 +30,7 @@ module.exports = {
   registerLimiter: limiter(60, 5, 'Too many accounts created from your network. Try again later.'),
   redeemLimiter: limiter(10, 8, 'Too many code attempts. Wait 10 minutes and try again.'),
   orderLimiter: limiter(10, 10, 'Too many orders. Wait a few minutes and try again.'),
+  mailLimiter: limiter(60, 5, 'Too many emails sent. Wait an hour and try again.'),
+  passwordLimiter: limiter(15, 6, 'Too many password attempts. Wait 15 minutes and try again.'),
+  globalLimiter: limiter(1, 300, 'Too many requests. Slow down and try again in a minute.'),
 };

@@ -32,16 +32,7 @@ app.use(helmet({
 }));
 
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: config.isProd ? '7d' : 0 }));
-app.use(express.urlencoded({ extended: false, limit: '64kb' }));
-
-app.use(session({
-  name: 'b2sid',
-  secret: config.sessionSecret,
-  store: new MySQLStore({ createDatabaseTable: true, clearExpired: true }, db.pool),
-  resave: false,
-  saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'lax', secure: config.isProd, maxAge: 14 * 24 * 3600 * 1000 },
-}));
+app.get('/healthz', (req, res) => res.json({ ok: true, comingSoon: config.comingSoon, db: dbReady, problems: config.problems }));
 
 // Values every page needs (set first, so even error pages can render)
 app.use((req, res, next) => {
@@ -53,6 +44,26 @@ app.use((req, res, next) => {
   res.locals.csrf = '';
   next();
 });
+
+// Coming Soon for ordinary visitors is served before sessions and the database, so it works
+// even while the database is not set up. Visitors with a login cookie go on to the full check.
+app.use(require('./src/middleware/comingSoon').earlyComingSoon);
+
+app.use(express.urlencoded({ extended: false, limit: '64kb' }));
+
+const sessionStore = new MySQLStore({ createDatabaseTable: true, clearExpired: true }, db.pool);
+let dbReady = false;
+sessionStore.onReady().then(() => { dbReady = true; }).catch((e) => console.error('Database not reachable:', e.message));
+app.use(session({
+  name: 'b2sid',
+  secret: config.sessionSecret,
+  store: sessionStore,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { httpOnly: true, sameSite: 'lax', secure: config.isProd, maxAge: 14 * 24 * 3600 * 1000 },
+}));
+
+
 app.use(flash);
 app.use((req, res, next) => { loadUser(req, res, next).catch(next); });
 app.use(async (req, res, next) => {
@@ -82,14 +93,27 @@ async function syncAdmins() {
   if (ids.length) await db.run("UPDATE users SET role = 'admin' WHERE account_id IN (?)", [ids]);
 }
 
+process.on('unhandledRejection', (e) => console.error('Unhandled rejection:', e && e.message ? e.message : e));
+
 if (require.main === module) {
-  require('./scripts/migrate').migrate()
+  // Always start listening first, so the site (at least the Coming Soon page) is up even when
+  // the database is not ready yet. Database setup runs right after and retries every minute.
+  app.listen(config.port, () => {
+    console.log(`Blacklist2WEB listening on :${config.port} (game API: ${config.game.mode}, coming soon: ${config.comingSoon})`);
+    config.problems.forEach((p) => console.warn('SETUP:', p));
+  });
+  const setup = () => require('./scripts/migrate').migrate()
     .then(syncAdmins)
-    .then(() => {
-      setInterval(() => syncAdmins().catch(() => {}), 60_000).unref();
-      app.listen(config.port, () => console.log(`Blacklist2WEB listening on :${config.port} (game API: ${config.game.mode})`));
-    })
-    .catch((e) => { console.error('Startup failed:', e.message); process.exit(1); });
+    .then(() => { dbReady = true; return true; })
+    .catch((e) => { console.error('Database setup failed (will retry in 60 s):', e.message); return false; });
+  setup().then((ok) => {
+    const timer = setInterval(async () => {
+      if (!dbReady && !(await setup())) return;
+      syncAdmins().catch(() => {});
+    }, 60_000);
+    timer.unref();
+    if (ok) syncAdmins().catch(() => {});
+  });
 }
 
 module.exports = app;

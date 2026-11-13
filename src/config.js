@@ -4,13 +4,20 @@ require('dotenv').config();
 const env = (k, d = '') => (process.env[k] ?? d);
 const isProd = env('NODE_ENV') === 'production';
 
-function requireSecret(name) {
+// Setup problems are collected instead of crashing, so the Coming Soon page still loads.
+const problems = [];
+
+function secret(name) {
   const v = env(name);
-  if (isProd && (!v || v.startsWith('change-me') || v.length < 32)) {
-    throw new Error(`${name} must be set to a random string of 32+ characters in production`);
+  if (!v || v.startsWith('change-me') || v.length < 32) {
+    if (isProd) problems.push(`${name} is missing or shorter than 32 characters`);
+    return null;
   }
-  return v || `dev-only-${name}`;
+  return v;
 }
+
+const sessionSecretValue = secret('SESSION_SECRET');
+const codePepperValue = secret('CODE_PEPPER');
 
 module.exports = {
   isProd,
@@ -21,8 +28,11 @@ module.exports = {
   comingSoon: env('COMING_SOON', 'true').toLowerCase() !== 'false',
   // Optional launch time for the countdown, e.g. 2026-12-20T20:00:00+08:00
   launchDate: env('LAUNCH_DATE'),
-  sessionSecret: requireSecret('SESSION_SECRET'),
-  codePepper: requireSecret('CODE_PEPPER'),
+  problems,
+  // Without SESSION_SECRET a random one is used: the site works, but logins reset on restart.
+  sessionSecret: sessionSecretValue || require('crypto').randomBytes(32).toString('hex'),
+  // Without CODE_PEPPER codes are switched off (a random pepper would break saved codes).
+  codePepper: codePepperValue || (isProd ? null : 'dev-only-CODE_PEPPER'),
   db: {
     host: env('DB_HOST', '127.0.0.1'),
     port: Number(env('DB_PORT', '3306')),

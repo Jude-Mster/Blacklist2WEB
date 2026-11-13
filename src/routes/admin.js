@@ -85,6 +85,10 @@ router.get('/codes', wrap(async (req, res) => {
 }));
 
 router.post('/codes', wrap(async (req, res) => {
+  if (!require('../config').codePepper) {
+    req.flash('error', 'Set CODE_PEPPER (a random string of 32+ characters) in Hostinger first. Codes are off without it.');
+    return res.redirect('/admin/codes');
+  }
   const quantity = int(req.body.quantity);
   const coinsEach = int(req.body.coins);
   const label = String(req.body.label || '').trim().slice(0, 120) || 'Batch';

@@ -56,6 +56,7 @@ async function createBatch({ label, coinsEach, quantity, resellerId, expiresAt, 
  * (the grant is recorded even if the game is offline, and can be retried).
  */
 async function redeem(user, input) {
+  if (!config.codePepper) return { error: 'Codes are not available yet. Try again later.' };
   const h = hash(input);
   const result = await db.tx(async (conn) => {
     const [rows] = await conn.query(

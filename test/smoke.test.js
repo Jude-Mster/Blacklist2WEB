@@ -4,6 +4,8 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert');
 const http = require('http');
+
+process.env.COMING_SOON = 'false'; // this test covers the full site
 const app = require('../server');
 const db = require('../src/db');
 

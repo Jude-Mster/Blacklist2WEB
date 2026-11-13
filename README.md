@@ -17,6 +17,13 @@ Security: bcrypt passwords, CSRF tokens on every form, rate limits on login/regi
 Helmet headers + CSP, sessions in MySQL, codes stored only as salted hashes, every coin grant
 recorded once and applied once (safe to retry).
 
+## Coming Soon mode
+
+On by default (`COMING_SOON=true`). Visitors see only a full-screen landing page with the key art,
+logo, "Coming soon", Discord / Facebook buttons and an optional countdown (`LAUNCH_DATE`, e.g.
+`2026-12-20T20:00:00+08:00`). Every other page redirects to it. Staff log in at `/login`; admins
+then see the whole site as normal. On launch day set `COMING_SOON=false` and redeploy.
+
 ## How it connects to the game
 
 The site never touches `ts2_gamedb`. It calls the game server's private HTTPS API, signed with a

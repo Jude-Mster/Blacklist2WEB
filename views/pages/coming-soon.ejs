@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= site.name %> — Coming soon</title>
+<meta name="description" content="Blacklist TS2 Online: a classic TwelveSky 2 private server for PC and Android. Coming soon.">
+<meta property="og:title" content="<%= site.name %> — Coming soon">
+<meta property="og:description" content="Classic TwelveSky 2 on PC and Android. Four factions, one shared world. Coming soon.">
+<meta property="og:image" content="<%= site.url %>/img/logo.png">
+<meta property="og:url" content="<%= site.url %>">
+<meta name="theme-color" content="#0a0608">
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/css/site.css">
+<link rel="stylesheet" href="/css/coming-soon.css">
+</head>
+<body class="cs">
+<main class="cs-stage">
+  <div class="cs-embers" aria-hidden="true"></div>
+  <div class="cs-inner">
+    <img class="cs-logo" src="/img/logo.png" alt="<%= site.name %>">
+    <p class="cs-kicker">CLASSIC TWELVESKY 2 · PC &amp; ANDROID</p>
+    <h1 class="cs-title">Coming soon</h1>
+    <p class="cs-sub">Four factions. One shared world. The list is being written — make sure your name is on it.</p>
+
+    <% if (launchDate) { %>
+    <div class="cs-count" id="countdown" data-launch="<%= launchDate %>" aria-live="polite">
+      <div><span data-u="d">--</span><small>Days</small></div>
+      <div><span data-u="h">--</span><small>Hours</small></div>
+      <div><span data-u="m">--</span><small>Minutes</small></div>
+      <div><span data-u="s">--</span><small>Seconds</small></div>
+    </div>
+    <% } %>
+
+    <div class="cs-actions">
+      <a class="btn big" href="<%= site.links.discord %>" rel="noopener">Join Discord</a>
+      <a class="btn big ghost" href="<%= site.links.facebook %>" rel="noopener">Follow on Facebook</a>
+    </div>
+    <p class="cs-note">Get launch news, beta keys and events first in our Discord.</p>
+  </div>
+  <footer class="cs-foot">© <%= new Date().getFullYear() %> <%= site.name %> · A fan-run private server, not affiliated with the official game or its publishers.</footer>
+</main>
+<% if (launchDate) { %><script src="/js/countdown.js" defer></script><% } %>
+</body>
+</html>

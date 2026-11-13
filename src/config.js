@@ -17,6 +17,10 @@ module.exports = {
   port: Number(env('PORT', '3000')),
   siteUrl: env('SITE_URL', 'http://localhost:3000').replace(/\/$/, ''),
   siteName: env('SITE_NAME', 'Blacklist TS2 Online'),
+  // On by default: visitors see only the Coming Soon page (admins still see the whole site).
+  comingSoon: env('COMING_SOON', 'true').toLowerCase() !== 'false',
+  // Optional launch time for the countdown, e.g. 2026-12-20T20:00:00+08:00
+  launchDate: env('LAUNCH_DATE'),
   sessionSecret: requireSecret('SESSION_SECRET'),
   codePepper: requireSecret('CODE_PEPPER'),
   db: {

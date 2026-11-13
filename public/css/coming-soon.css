@@ -1,0 +1,56 @@
+/* Coming Soon page */
+body.cs { min-height: 100vh; }
+.cs-stage {
+  position: relative; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 5% 90px; text-align: center; overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(10,6,8,.15) 0%, rgba(10,6,8,.55) 55%, rgba(10,6,8,.92) 100%),
+    linear-gradient(180deg, rgba(10,6,8,.25) 0%, rgba(10,6,8,.1) 40%, rgba(10,6,8,.85) 100%),
+    url(/img/hero-bg.jpg) center 30% / cover no-repeat;
+  background-color: var(--bg);
+}
+.cs-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 18px; max-width: 880px; }
+.cs-logo { width: min(560px, 86vw); filter: drop-shadow(0 18px 40px rgba(0,0,0,.65)); animation: cs-rise 1.4s ease-out both; }
+.cs-kicker { font: 700 14px var(--label); letter-spacing: 6px; color: var(--ivory); opacity: .9; }
+.cs-title {
+  font-family: var(--display); font-size: clamp(54px, 10vw, 112px); line-height: 1; color: var(--ivory);
+  text-shadow: 0 0 24px rgba(224,49,47,.55), 0 4px 0 #000, 0 0 2px #000;
+  animation: cs-glow 3.2s ease-in-out infinite alternate;
+}
+.cs-sub { font-size: clamp(16px, 2.2vw, 20px); color: var(--muted); max-width: 620px; }
+.cs-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 8px; }
+.cs-note { font-size: 14px; color: var(--dim); }
+.cs-count { display: flex; gap: 12px; margin-top: 6px; }
+.cs-count > div {
+  min-width: 92px; padding: 14px 10px 10px; border: 1px solid var(--line); border-top: 2px solid var(--red);
+  background: rgba(20,12,16,.82); border-radius: 6px; display: flex; flex-direction: column; align-items: center;
+}
+.cs-count span { font: 700 40px var(--label); line-height: 1; color: var(--ivory); }
+.cs-count small { font: 700 11px var(--label); letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+.cs-foot { position: absolute; bottom: 18px; left: 0; right: 0; padding: 0 5%; font-size: 12px; color: var(--dim); z-index: 1; }
+
+/* drifting embers */
+.cs-embers { position: absolute; inset: 0; pointer-events: none; opacity: .75;
+  background-image:
+    radial-gradient(2px 2px at 12% 80%, #ff8a5a 50%, transparent 51%),
+    radial-gradient(2px 2px at 28% 92%, #ffb36b 50%, transparent 51%),
+    radial-gradient(3px 3px at 47% 86%, #ff6b4e 50%, transparent 51%),
+    radial-gradient(2px 2px at 63% 95%, #ffc27a 50%, transparent 51%),
+    radial-gradient(2px 2px at 78% 84%, #ff7b55 50%, transparent 51%),
+    radial-gradient(3px 3px at 90% 90%, #ff9a62 50%, transparent 51%);
+  background-size: 100% 100%;
+  animation: cs-embers 9s linear infinite;
+}
+
+@keyframes cs-rise { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes cs-glow { from { text-shadow: 0 0 18px rgba(224,49,47,.35), 0 4px 0 #000; } to { text-shadow: 0 0 34px rgba(224,49,47,.75), 0 4px 0 #000; } }
+@keyframes cs-embers { from { transform: translateY(0); opacity: .8; } to { transform: translateY(-70vh); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-logo, .cs-title, .cs-embers { animation: none; }
+}
+@media (max-width: 560px) {
+  .cs-count > div { min-width: 70px; }
+  .cs-count span { font-size: 30px; }
+  .cs-actions .btn { width: 100%; }
+}

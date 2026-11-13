@@ -60,6 +60,7 @@ app.use(async (req, res, next) => {
   next();
 });
 app.use(csrf);
+app.use(require('./src/middleware/comingSoon').comingSoon);
 
 app.use('/', require('./src/routes/public'));
 app.use('/', require('./src/routes/auth'));

@@ -19,7 +19,7 @@ Hostinger). Read README.md for how it runs and docs/GAME_API.md for the game lin
 | 10 | Secrets server-side | API keys and secrets only in env vars read by `src/config.js`. Nothing secret in `views/` or `public/`. |
 | 11 | Security scans | `.github/workflows/security-review.yml` runs anthropics/claude-code-security-review on pull requests (needs the `CLAUDE_API_KEY` repo secret). Work on a branch + PR for anything security-related. |
 | 12 | Rate limiting | Global 300/min/IP plus per-route limits (login, register, password, redeem, orders, emails) in `src/middleware/security.js`. New sensitive routes get their own limiter. |
-| 13 | Validate file uploads | There are no uploads yet. If one is added: allow-list types by content (magic bytes, not the name), size limit, random server-side filename, store outside `public/` or on object storage, never execute or serve with the user's type. |
+| 13 | Validate file uploads | The only upload is the payment screenshot in the Discord bot (`bot/src/checks.js`): PNG/JPG/WebP by magic bytes, 8 MB cap, Discord CDN URLs only, kept in memory, never saved or executed. Any new upload: allow-list types by content, size limit, random server-side filename, store outside `public/` or on object storage, never execute or serve with the user's type. |
 | 14 | No sensitive data in logs | Use `src/log.js` (`requestError`, `clean`): no query strings, bodies, passwords, codes, tokens, emails or SQL values. Never `console.log(req.body)`. |
 | 15 | Hash passwords | bcrypt cost 12. Game passwords are the game server's job (see GAME_API.md rule 1). |
 | 16 | Verify webhook signatures | `src/services/webhooks.js` `verifyHmac` on the raw body, then re-check the amount against our own order, idempotently. |
@@ -29,3 +29,5 @@ Hostinger). Read README.md for how it runs and docs/GAME_API.md for the game lin
 
 Also: CSRF token on every form (`_csrf`), `npm test` must pass before pushing (needs MySQL), and
 keep commit messages in plain language.
+
+Discord GP bot: `bot/` (own package). It talks to the site only through `/internal/bot/*`, signed with `BOT_API_SECRET` (HMAC over `ts.METHOD.path.body`, 5-minute window, 30/min limit); `bot_mints.order_ref` is unique so one order can never mint two codes.

@@ -19,6 +19,11 @@ function secret(name) {
 const sessionSecretValue = secret('SESSION_SECRET');
 const codePepperValue = secret('CODE_PEPPER');
 
+// Optional: shared secret for the Discord GP bot. Without it (or if shorter than 32
+// characters) the bot API stays switched off and answers 404.
+const botSecretRaw = env('BOT_API_SECRET');
+const botApiSecret = botSecretRaw && !botSecretRaw.startsWith('change-me') && botSecretRaw.length >= 32 ? botSecretRaw : null;
+
 module.exports = {
   isProd,
   port: Number(env('PORT', '3000')),
@@ -58,6 +63,7 @@ module.exports = {
     pass: env('SMTP_PASS'),
     from: env('MAIL_FROM', `Blacklist TS2 <${env('SMTP_USER', 'no-reply@blacklist2.com')}>`),
   },
+  bot: { apiSecret: botApiSecret },
   turnstile: { siteKey: env('TURNSTILE_SITE_KEY'), secret: env('TURNSTILE_SECRET') },
   links: {
     discord: env('DISCORD_URL', '#'),

@@ -24,6 +24,20 @@ const codePepperValue = secret('CODE_PEPPER');
 const botSecretRaw = env('BOT_API_SECRET');
 const botApiSecret = botSecretRaw && !botSecretRaw.startsWith('change-me') && botSecretRaw.length >= 32 ? botSecretRaw : null;
 
+function gameCa(v) {
+  if (!v) return undefined;
+  const pem = v.includes('BEGIN CERTIFICATE') ? v.replace(/\\n/g, '\n') : Buffer.from(v, 'base64').toString('utf8');
+  if (!pem.includes('BEGIN CERTIFICATE')) { problems.push('GAME_API_CA is not a PEM certificate'); return undefined; }
+  return pem;
+}
+
+// The real game link needs all four settings (GAME_API_* from the game server's website_env.txt).
+if (env('GAME_API_MODE', 'mock') === 'real') {
+  if (!env('GAME_API_URL').startsWith('https://')) problems.push('GAME_API_URL must be an https:// address in real mode');
+  if (env('GAME_API_SECRET').length < 32) problems.push('GAME_API_SECRET is missing or shorter than 32 characters');
+  if (!env('GAME_API_CA')) problems.push('GAME_API_CA is missing (the game server certificate)');
+}
+
 module.exports = {
   isProd,
   port: Number(env('PORT', '3000')),
@@ -49,6 +63,9 @@ module.exports = {
     mode: env('GAME_API_MODE', 'mock'),
     url: env('GAME_API_URL').replace(/\/$/, ''),
     secret: env('GAME_API_SECRET'),
+    // the game server's own certificate (PEM). Env vars hold one line, so "\n" may stand for the line breaks,
+    // or the whole PEM may be given as base64.
+    ca: gameCa(env('GAME_API_CA')),
   },
   gcash: {
     name: env('GCASH_NAME'),

@@ -2,6 +2,7 @@
 // The website's only door into the game. Real mode talks to the private Game API on the
 // game server (docs/GAME_API.md); mock mode keeps a fake game in memory for development.
 const crypto = require('crypto');
+const https = require('https');
 const config = require('../config');
 const mock = require('./mock');
 
@@ -9,32 +10,61 @@ class GameError extends Error {
   constructor(code, message) { super(message); this.code = code; }
 }
 
-function sign(ts, method, pathAndQuery, body) {
-  return crypto.createHmac('sha256', config.game.secret).update(`${ts}.${method}.${pathAndQuery}.${body}`).digest('hex');
+function sign(ts, nonce, method, pathAndQuery, body) {
+  return crypto.createHmac('sha256', config.game.secret).update(`${ts}.${nonce}.${method}.${pathAndQuery}.${body}`).digest('hex');
+}
+
+// The game server's certificate is its own (made by the game server, see docs/GAME_API.md), so the site trusts
+// exactly that one certificate (GAME_API_CA) instead of the public CAs. Without GAME_API_CA the normal public CAs
+// apply (a tunnel with a public certificate). Plain http:// is refused: the password travels in the body.
+const agent = config.game.ca ? new https.Agent({ ca: config.game.ca, keepAlive: false, minVersion: 'TLSv1.2' }) : undefined;
+
+function send(method, pathAndQuery, body, headers) {
+  return new Promise((resolve, reject) => {
+    let url;
+    try { url = new URL(config.game.url + pathAndQuery); } catch { return reject(new Error('bad GAME_API_URL')); }
+    if (url.protocol !== 'https:') return reject(new Error('GAME_API_URL must be https'));
+    const req = https.request(url, {
+      method,
+      agent,
+      headers: { ...headers, ...(body ? { 'content-length': Buffer.byteLength(body) } : {}) },
+      timeout: 8000,
+    }, (res) => {
+      const chunks = [];
+      let size = 0;
+      res.on('data', (c) => { size += c.length; if (size > 1_000_000) req.destroy(new Error('answer too large')); else chunks.push(c); });
+      res.on('end', () => resolve({ status: res.statusCode, text: Buffer.concat(chunks).toString('utf8') }));
+      res.on('error', reject);
+    });
+    req.on('timeout', () => req.destroy(new Error('timeout')));
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
 }
 
 async function call(method, pathAndQuery, payload) {
   if (config.game.mode === 'mock') return mock.handle(method, pathAndQuery, payload);
+  if (!config.game.url || !config.game.secret) throw new GameError('unreachable', 'The game server is not reachable right now.');
   const body = payload ? JSON.stringify(payload) : '';
   const ts = Math.floor(Date.now() / 1000).toString();
+  const nonce = crypto.randomBytes(16).toString('hex'); // new for every request: the game server accepts a nonce once
   let res;
   try {
-    res = await fetch(config.game.url + pathAndQuery, {
-      method,
-      headers: {
-        'content-type': 'application/json',
-        'x-b2-timestamp': ts,
-        'x-b2-signature': sign(ts, method, pathAndQuery, body),
-      },
-      body: body || undefined,
-      signal: AbortSignal.timeout(8000),
+    res = await send(method, pathAndQuery, body, {
+      'content-type': 'application/json',
+      'x-b2-timestamp': ts,
+      'x-b2-nonce': nonce,
+      'x-b2-signature': sign(ts, nonce, method, pathAndQuery, body),
     });
   } catch (e) {
     throw new GameError('unreachable', 'The game server is not reachable right now.');
   }
   let data = {};
-  try { data = await res.json(); } catch { /* empty */ }
-  if (!res.ok || data.ok === false) throw new GameError(data.error || `http_${res.status}`, data.message || 'The game server refused the request.');
+  try { data = JSON.parse(res.text); } catch { /* empty */ }
+  if (res.status < 200 || res.status >= 300 || data.ok === false) {
+    throw new GameError(data.error || `http_${res.status}`, data.message || 'The game server refused the request.');
+  }
   return data;
 }
 
@@ -49,6 +79,7 @@ async function cached(key, ttlMs, fn) {
 }
 
 module.exports = {
+  sign, // exported for the test of the signature format
   GameError,
   /** { online, players, serverTime } */
   statusCached: () => cached('status', 30_000, async () => {

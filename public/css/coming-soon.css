@@ -13,10 +13,17 @@ body.cs { min-height: 100vh; }
 .cs-logo { width: min(560px, 86vw); filter: drop-shadow(0 18px 40px rgba(0,0,0,.65)); animation: cs-rise 1.4s ease-out both; }
 .cs-kicker { font: 700 14px var(--label); letter-spacing: 6px; color: var(--ivory); opacity: .9; }
 .cs-title {
-  font-family: var(--display); font-size: clamp(54px, 10vw, 112px); line-height: 1; color: var(--ivory);
+  font-family: var(--display); font-size: clamp(44px, 8vw, 92px); line-height: 1; color: var(--ivory);
   text-shadow: 0 0 24px rgba(224,49,47,.55), 0 4px 0 #000, 0 0 2px #000;
   animation: cs-glow 3.2s ease-in-out infinite alternate;
 }
+.cs-status {
+  display: inline-flex; align-items: center; gap: 10px; padding: 8px 18px; border-radius: 999px;
+  font: 700 13px var(--label); letter-spacing: 3px; text-transform: uppercase; color: var(--ivory);
+  background: rgba(10,6,8,.6); border: 1px solid rgba(224,49,47,.55); box-shadow: 0 0 18px rgba(224,49,47,.25);
+}
+.cs-dot { width: 9px; height: 9px; border-radius: 50%; background: #e0312f; box-shadow: 0 0 0 0 rgba(224,49,47,.7); animation: cs-pulse 1.8s ease-out infinite; }
+@keyframes cs-pulse { 0% { box-shadow: 0 0 0 0 rgba(224,49,47,.7); } 100% { box-shadow: 0 0 0 10px rgba(224,49,47,0); } }
 .cs-sub { font-size: clamp(16px, 2.2vw, 20px); color: var(--muted); max-width: 620px; }
 .cs-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 8px; }
 .cs-note { font-size: 14px; color: var(--dim); }
@@ -47,9 +54,10 @@ body.cs { min-height: 100vh; }
 @keyframes cs-embers { from { transform: translateY(0); opacity: .8; } to { transform: translateY(-70vh); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cs-logo, .cs-title, .cs-embers { animation: none; }
+  .cs-logo, .cs-title, .cs-embers, .cs-dot { animation: none; }
 }
 @media (max-width: 560px) {
+  .cs-status { font-size: 11px; letter-spacing: 1.5px; padding: 7px 14px; white-space: nowrap; }
   .cs-count > div { min-width: 70px; }
   .cs-count span { font-size: 30px; }
   .cs-actions .btn { width: 100%; }

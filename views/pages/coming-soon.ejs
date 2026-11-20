@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><%= site.name %> — Coming soon</title>
-<meta name="description" content="Blacklist TS2 Online: a classic TwelveSky 2 private server for PC and Android. Coming soon.">
-<meta property="og:title" content="<%= site.name %> — Coming soon">
-<meta property="og:description" content="Classic TwelveSky 2 on PC and Android. Four factions, one shared world. Coming soon.">
+<title><%= site.name %> — Closed Alpha Test · Closed Beta soon</title>
+<meta name="description" content="Blacklist TS2 Online: a classic TwelveSky 2 private server for PC and Android. Now in Closed Alpha Test; Closed Beta coming soon.">
+<meta property="og:title" content="<%= site.name %> — Closed Alpha Test">
+<meta property="og:description" content="Classic TwelveSky 2 on PC and Android. Four factions, one shared world. Now in Closed Alpha Test; Closed Beta coming soon.">
 <meta property="og:image" content="<%= site.url %>/img/logo.png">
 <meta property="og:url" content="<%= site.url %>">
 <meta name="theme-color" content="#0a0608">
@@ -23,8 +23,9 @@
   <div class="cs-inner">
     <img class="cs-logo" src="/img/logo.png" alt="<%= site.name %>">
     <p class="cs-kicker">CLASSIC TWELVESKY 2 · PC &amp; ANDROID</p>
-    <h1 class="cs-title">Coming soon</h1>
-    <p class="cs-sub">Four factions. One shared world. The list is being written — make sure your name is on it.</p>
+    <p class="cs-status"><span class="cs-dot" aria-hidden="true"></span>Closed Alpha Test in progress</p>
+    <h1 class="cs-title">Closed Beta<br>coming soon</h1>
+    <p class="cs-sub">We're testing the world right now. Closed Beta opens soon — make sure your name is on the list.</p>
 
     <% if (launchDate) { %>
     <div class="cs-count" id="countdown" data-launch="<%= launchDate %>" aria-live="polite">
@@ -39,7 +40,7 @@
       <a class="btn big" href="<%= site.links.discord %>" rel="noopener">Join Discord</a>
       <a class="btn big ghost" href="<%= site.links.facebook %>" rel="noopener">Follow on Facebook</a>
     </div>
-    <p class="cs-note">Get launch news, beta keys and events first in our Discord.</p>
+    <p class="cs-note">Closed Beta keys, launch news and events go out first in our Discord.</p>
   </div>
   <footer class="cs-foot">© <%= new Date().getFullYear() %> <%= site.name %> · A fan-run private server, not affiliated with the official game or its publishers.</footer>
 </main>

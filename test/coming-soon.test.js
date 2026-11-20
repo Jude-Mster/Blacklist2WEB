@@ -16,11 +16,12 @@ after(async () => { server.close(); await db.pool.end(); });
 
 const get = (p) => fetch(base + p, { redirect: 'manual' });
 
-test('home shows the coming soon page with countdown', async () => {
+test('home shows the closed alpha page with countdown', async () => {
   const r = await get('/');
   assert.strictEqual(r.status, 200);
   const html = await r.text();
-  assert.match(html, /Coming soon/);
+  assert.match(html, /Closed Alpha Test in progress/);
+  assert.match(html, /Closed Beta<br>coming soon/);
   assert.match(html, /\/img\/logo\.png/);
   assert.match(html, /data-launch="2030-01-01T00:00:00.000Z"/);
 });

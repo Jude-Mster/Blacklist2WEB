@@ -67,3 +67,10 @@ Every push to `main` redeploys the site.
 
 Server rates, max level and download sizes on the home and download pages are shown as `[x]`
 until you set them in `views/pages/home.ejs` and `views/pages/download.ejs`.
+
+## Discord GP bot
+
+`bot/` is a separate small app that sells GP codes in Discord with the owner's approval
+(buyer uploads the payment screenshot, owner presses Approve in a DM, the site mints one code and
+the bot delivers it). Setup: `bot/README.md`. The site side is `src/routes/internal.js`, switched
+on by `BOT_API_SECRET`.

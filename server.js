@@ -39,6 +39,10 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: config.isProd ?
 app.get('/healthz', (req, res) => res.json(config.isProd ? { ok: true } : { ok: true, comingSoon: config.comingSoon, db: dbReady, problems: config.problems }));
 app.use(globalLimiter);
 
+// Signed machine-to-machine API for the Discord GP bot (no cookies, no CSRF; HMAC instead).
+// Mounted before Coming Soon and sessions; it answers 404 unless BOT_API_SECRET is set.
+app.use('/internal', require('./src/routes/internal').router);
+
 // Values every page needs (set first, so even error pages can render)
 app.use((req, res, next) => {
   res.locals.site = { name: config.siteName, url: config.siteUrl, links: config.links };

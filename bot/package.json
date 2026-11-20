@@ -1,0 +1,19 @@
+{
+  "name": "blacklist2-gp-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Discord bot for Blacklist2: GP code orders with owner approval.",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "register": "node src/register.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.28.1",
+    "dotenv": "^18.0.10"
+  }
+}

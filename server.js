@@ -35,6 +35,7 @@ app.use(helmet({
 }));
 
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: config.isProd ? '7d' : 0 }));
+app.get('/favicon.ico', (req, res) => res.redirect(301, '/img/favicon.png'));
 // Health check: details only outside production (setup problems are printed to the server log).
 app.get('/healthz', (req, res) => res.json(config.isProd ? { ok: true } : { ok: true, comingSoon: config.comingSoon, db: dbReady, problems: config.problems }));
 app.use(globalLimiter);
@@ -63,7 +64,7 @@ app.use(sameOrigin);
 
 const sessionStore = new MySQLStore({ createDatabaseTable: true, clearExpired: true }, db.pool);
 let dbReady = false;
-sessionStore.onReady().then(() => { dbReady = true; }).catch((e) => console.error('Database not reachable:', log.clean(e.message)));
+sessionStore.onReady().catch((e) => console.error('Database not reachable:', log.clean(e.message)));
 app.use(session({
   name: 'b2sid',
   secret: config.sessionSecret,
@@ -94,6 +95,9 @@ app.use((req, res) => res.status(404).render('pages/error', { title: 'Not found'
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   log.requestError(req, err);
+  // The page was already sent (e.g. the session failed to save after it): let Express close the
+  // connection instead of sending a second response, which would crash the process.
+  if (res.headersSent) return next(err);
   res.status(500).render('pages/error', { title: 'Something went wrong', message: 'An error happened on our side. Please try again in a minute.' });
 });
 
@@ -105,16 +109,18 @@ async function syncAdmins() {
 
 process.on('unhandledRejection', (e) => console.error('Unhandled rejection:', log.clean(e && e.message ? e.message : e)));
 
-if (require.main === module) {
-  // Always start listening first, so the site (at least the Coming Soon page) is up even when
-  // the database is not ready yet. Database setup runs right after and retries every minute.
-  app.listen(config.port, () => {
-    console.log(`Blacklist2WEB listening on :${config.port} (game API: ${config.game.mode}, coming soon: ${config.comingSoon})`);
-    config.problems.forEach((p) => console.warn('SETUP:', p));
-  });
+/**
+ * Creates and updates the database tables (migrations) and syncs admins. Retries every minute
+ * until it works. It must run however the app is started: Hostinger's Node runner loads
+ * server.js with require() (so require.main is not this file) and listens on the exported app.
+ */
+let setupStarted = false;
+function startSetup() {
+  if (setupStarted) return;
+  setupStarted = true;
   const setup = () => require('./scripts/migrate').migrate()
     .then(syncAdmins)
-    .then(() => { dbReady = true; return true; })
+    .then(() => { dbReady = true; console.log('Database ready'); return true; })
     .catch((e) => { console.error('Database setup failed (will retry in 60 s):', log.clean(e.message)); return false; });
   setup().then((ok) => {
     const timer = setInterval(async () => {
@@ -124,6 +130,20 @@ if (require.main === module) {
     timer.unref();
     if (ok) syncAdmins().catch(() => {});
   });
+}
+
+if (require.main === module) {
+  // Started directly (node server.js): listen first, so the site (at least the Coming Soon page)
+  // is up even when the database is not ready yet.
+  app.listen(config.port, () => {
+    console.log(`Blacklist2WEB listening on :${config.port} (game API: ${config.game.mode}, coming soon: ${config.comingSoon})`);
+    config.problems.forEach((p) => console.warn('SETUP:', p));
+  });
+  startSetup();
+} else if (!process.env.NODE_TEST_CONTEXT) {
+  // Loaded by a host runner (Hostinger). Tests (node --test) run migrations themselves.
+  config.problems.forEach((p) => console.warn('SETUP:', p));
+  startSetup();
 }
 
 module.exports = app;

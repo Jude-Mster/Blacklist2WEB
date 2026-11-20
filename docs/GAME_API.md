@@ -6,17 +6,37 @@ sides follow. Until the game side exists, run the website with `GAME_API_MODE=mo
 
 ## Transport and security
 
-- HTTPS only. Expose it through a tunnel (for example Cloudflare Tunnel) at a host such as
-  `game-api.blacklist2.com`; do **not** open the MySQL port or this API's port on the router.
+- HTTPS only, straight to the game server: `https://play.blacklist2.com:29980` (Windows Firewall rule
+  "Blacklist2 game api"). The MySQL port stays closed.
+- The certificate is the game server's own (ECDSA P-256, 10 years, made at its first start in
+  `server\secrets\gameapi\`). The website trusts exactly that certificate: `GAME_API_CA` holds the base64 of
+  `gameapi_cert.pem`, and `src/game/index.js` passes it as the only CA. A different certificate, plain `http://` or a
+  wrong host name is refused. The private key (`gameapi.pfx`) never leaves the game server.
 - Every request carries:
   - `x-b2-timestamp`: Unix seconds.
-  - `x-b2-signature`: hex HMAC-SHA256 of `"{timestamp}.{METHOD}.{path?query}.{rawBody}"`
+  - `x-b2-nonce`: 32 random hex digits, new for every request.
+  - `x-b2-signature`: hex HMAC-SHA256 of `"{timestamp}.{nonce}.{METHOD}.{path?query}.{rawBody}"`
     with the shared secret `GAME_API_SECRET` (raw body is `""` for GET).
-- The server rejects a request when the signature does not match (constant-time compare) or the
-  timestamp is more than 60 s away from its clock.
-- Optionally also allow-list the website's outgoing IP.
+    Test vector: secret `0123456789abcdef0123456789abcdef`, timestamp `1700000000`, nonce
+    `00112233445566778899aabbccddeeff`, `POST /v1/accounts`, body `{"accountId":"abcd","password":"pw"}` →
+    `d57e75f26732beead956561a468f30d3e7a295899c44c91572873883c4018a9c`.
+- The server rejects a request when the signature does not match (constant-time compare), the timestamp is more than
+  60 s away from its clock, or the nonce was already used (replay). 20 refused requests from one address in
+  10 minutes shut that address out for 10 minutes; any address may make 600 requests a minute.
+- Optional: `GameApiAllow` in the game server's `server.config.json` (comma list of the website's outgoing addresses).
 - Responses are JSON. Success: `{ "ok": true, ... }`. Failure: HTTP 4xx/5xx with
   `{ "ok": false, "error": "<code>", "message": "<text a player may see>" }`.
+
+### Setting it up (game server side: `Blacklist2.Server`, `GameApi.cs`)
+
+1. Apply the update that carries the Game API, then run `host\gameapi_setup.bat` as Administrator on the game server.
+   It adds a random `GameApiSecret` to `server\server.secrets.json`, opens TCP 29980, makes the certificate and writes
+   `server\secrets\gameapi\website_env.txt` with the four website settings.
+2. Restart the game server. The log shows `[gameapi] https://play.blacklist2.com:29980/v1 ...`.
+3. Hostinger → the web app → Environment variables: `GAME_API_MODE=real`, `GAME_API_URL`, `GAME_API_SECRET`,
+   `GAME_API_CA` from that file; redeploy; delete the file.
+4. Self checks on the game server's PC: `Blacklist2.Server.dll --selftest-gameapi` (transport and signatures) and
+   `--selftest-gameapi-db` (every account / coin endpoint with a throw-away account that is removed again).
 
 ## Endpoints
 
@@ -32,6 +52,11 @@ sides follow. Until the game side exists, run the website with `GAME_API_MODE=mo
 | POST | `/v1/coins/add` | `{ accountId, coins, creditId }` | `{ balance }` |
 | POST | `/v1/characters/unstuck` | `{ accountId, characterName }` | `{}` |
 | GET | `/v1/rankings?type=level\|pk\|duel\|guild&limit=50` | – | `{ rows: [{ rank, name, faction, guild, value }] }` |
+
+Notes on the game side today: `characters` also carries `mlevel`; rankings `level` is live (players only, no GM),
+`pk`, `duel` and `guild` answer an empty list until the game keeps those counts; factions count the characters of
+each faction (`pkKillsWeek` is 0 for now). Passwords are stored as the game login server stores them:
+`p2$` PBKDF2-SHA256 of the MD5 the client sends (rule 1 below is done).
 | GET | `/v1/factions` | – | `{ factions: [{ name, players, pkKillsWeek }] }` |
 
 ### Rules the game side must follow
